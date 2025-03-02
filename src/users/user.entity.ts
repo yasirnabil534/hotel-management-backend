@@ -11,10 +11,7 @@ export class User {
   password: string;
 
   @ApiProperty()
-  firstName: string;
-
-  @ApiProperty()
-  lastName: string;
+  name: string;
 
   @ApiProperty()
   createdAt: Date;

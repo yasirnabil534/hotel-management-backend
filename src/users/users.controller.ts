@@ -1,14 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { User } from './user.entity';
-import { UsersService } from './users.service';
+import { IUserService } from './user.interface';
 import { UserType } from '../utils/enums/user-type.enum';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    @Inject('IUserService')
+    private readonly usersService: IUserService
+  ) {}
 
   @Post('super-admin')
   @ApiOperation({ summary: 'Create a new super admin user' })

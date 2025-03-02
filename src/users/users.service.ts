@@ -1,16 +1,23 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
-import { IUserRepository, IUserService, USER_REPOSITORY } from './user.interface';
+import { IUserRepository, IUserService } from './user.interface';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService implements IUserService {
   constructor(
-    @Inject(USER_REPOSITORY)
+    @Inject('IUserRepository')
     private userRepository: IUserRepository
   ) {}
 
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findByEmail(email);
+  }
+
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 13);
+    createUserDto.password = hashedPassword;
     return this.userRepository.create(createUserDto);
   }
 

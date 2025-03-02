@@ -17,9 +17,22 @@ model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
   password  String
-  firstName String
-  lastName  String
+  name      String
   type      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  Hotel     Hotel[]
+}
+
+model Hotel {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  address   String
+  rating    Float
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner     User     @relation(fields: [ownerId], references: [id])
 }
