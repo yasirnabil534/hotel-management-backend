@@ -1,13 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { compareSync } from 'bcrypt';
-import { UsersService } from '../users/users.service';
+import { IUserService } from '../users/user.interface';
+import { IAuthService } from './auth.interface';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements IAuthService {
   constructor(
-    private readonly usersService: UsersService,
+    @Inject('IUserService')
+    private readonly usersService: IUserService,
     private readonly jwtService: JwtService
   ) {}
 
@@ -29,7 +31,8 @@ export class AuthService {
   async login(user: Omit<User, 'password'>) {
     const payload = { email: user.email, sub: user.id };
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, { expiresIn: '15m' }),
+      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
       user: user,
     };
   }

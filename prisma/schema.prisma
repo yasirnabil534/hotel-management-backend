@@ -22,17 +22,64 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Hotel     Hotel[]
+  Hotel Hotel[]
 }
 
 model Hotel {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   address   String
-  rating    Float
+  rating    Float    @default(0)
   ownerId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner     User     @relation(fields: [ownerId], references: [id])
+  owner    User       @relation(fields: [ownerId], references: [id])
+  services Service[]
+  products Product[]
+  Category Category[]
+}
+
+model Service {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  hotelId     String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotel    Hotel      @relation(fields: [hotelId], references: [id])
+  products Product[]
+  Category Category[]
+}
+
+model Product {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Float
+  images      String[] @default([])
+  serviceId   String   @db.ObjectId
+  hotelId     String   @db.ObjectId
+  categoryId  String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  service Service @relation(fields: [serviceId], references: [id])
+  hotel   Hotel   @relation(fields: [hotelId], references: [id])
+
+  category Category @relation(fields: [categoryId], references: [id])
+}
+
+model Category {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  serviceId String   @db.ObjectId
+  hotelId   String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service Service   @relation(fields: [serviceId], references: [id])
+  hotel   Hotel     @relation(fields: [hotelId], references: [id])
+  Product Product[]
 }

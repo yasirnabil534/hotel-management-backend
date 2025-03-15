@@ -8,7 +8,6 @@ import { PrismaModule } from '../prisma/prisma.module';
   imports: [PrismaModule],
   controllers: [HotelController],
   providers: [
-    HotelService,
     {
       provide: 'IHotelRepository',
       useClass: HotelRepository,
@@ -16,7 +15,7 @@ import { PrismaModule } from '../prisma/prisma.module';
     {
       provide: 'IHotelService',
       useClass: HotelService,
-    }
+    },
   ],
 })
 export class HotelModule {}

@@ -5,7 +5,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: ['@typescript-eslint/eslint-plugin', 'import'],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
@@ -32,7 +32,8 @@ module.exports = {
       'trailingComma': 'es5',
       'printWidth': 100,
       'tabWidth': 2,
-      'endOfLine': 'auto'
+      'endOfLine': 'auto',
+      'nextLine': 'disable'
     }],
   },
 };
