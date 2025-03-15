@@ -26,12 +26,7 @@ export class CreateUserDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  firstName: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
+  name: string;
 
   @IsEnum(UserType)
   @IsNotEmpty()
@@ -62,13 +57,7 @@ export class UpdateUserDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  firstName: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  lastName: string;
+  name: string;
 
   @ApiProperty()
   @IsEnum(UserType)
