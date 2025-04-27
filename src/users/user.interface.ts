@@ -3,7 +3,7 @@ import { CreateUserDto, UpdateUserDto } from './user.dto';
 
 export interface IUserRepository {
   create(createUserDto: CreateUserDto): Promise<User>;
-  findAll(): Promise<User[]>;
+  findAll(query: Record<string, any>): Promise<User[]>;
   findOne(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   update(id: string, updateUserDto: UpdateUserDto): Promise<User>;
@@ -12,7 +12,7 @@ export interface IUserRepository {
 
 export interface IUserService {
   create(createUserDto: CreateUserDto): Promise<User>;
-  findAll(): Promise<User[]>;
+  findAll(query?: Record<string, any>): Promise<User[]>;
   findOne(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   update(id: string, updateUserDto: UpdateUserDto): Promise<User>;

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { Category } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './category.dto';
-import { Category } from '@prisma/client';
 import { ICategoryRepository } from './category.interface';
 
 @Injectable()
@@ -15,8 +15,39 @@ export class CategoryRepository implements ICategoryRepository {
     });
   }
 
-  async findAll(): Promise<Category[]> {
+  async findAll(query: Record<string, any>): Promise<Category[]> {
+    const { page, limit, sortBy, sortOrder, search, ...filters } = query;
+    const skip = page
+      ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
+      : 1;
+    const take = limit ? parseInt(limit) : 10;
+
+    let orderBy = undefined;
+    if (sortBy) {
+      orderBy = {
+        [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+      };
+    }
+    let allFilters = { ...filters };
+    if (search) {
+      allFilters = {
+        ...allFilters,
+        AND: [
+          {
+            name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    }
+
     return this.prisma.category.findMany({
+      where: allFilters,
+      skip,
+      take,
+      orderBy,
       include: { service: true, hotel: true },
     });
   }
@@ -42,7 +73,10 @@ export class CategoryRepository implements ICategoryRepository {
     });
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<Category> {
     return this.prisma.category.update({
       where: { id },
       data: updateCategoryDto,

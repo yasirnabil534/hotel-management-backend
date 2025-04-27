@@ -15,8 +15,39 @@ export class HotelRepository implements IHotelRepository {
     });
   }
 
-  async findAll(): Promise<Hotel[]> {
+  async findAll(query: Record<string, any>): Promise<Hotel[]> {
+    const { page, limit, sortBy, sortOrder, search, ...filters } = query;
+    const skip = page
+      ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
+      : 1;
+    const take = limit ? parseInt(limit) : 10;
+
+    let orderBy = undefined;
+    if (sortBy) {
+      orderBy = {
+        [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+      };
+    }
+    let allFilters = { ...filters };
+    if (search) {
+      allFilters = {
+        ...allFilters,
+        AND: [
+          {
+            name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    }
+
     return this.prisma.hotel.findMany({
+      where: allFilters,
+      skip,
+      take,
+      orderBy,
       include: { owner: true },
     });
   }

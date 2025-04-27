@@ -14,8 +14,8 @@ export class ServicesService implements IServiceService {
     return this.serviceRepository.create(createServiceDto);
   }
 
-  async findAll(): Promise<Service[]> {
-    return this.serviceRepository.findAll();
+  async findAll(query?: Record<string, any>): Promise<Service[]> {
+    return this.serviceRepository.findAll(query || {});
   }
 
   async findOne(id: string): Promise<Service> {

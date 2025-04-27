@@ -14,8 +14,40 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async findAll(query: Record<string, any>): Promise<User[]> {
+    const { page, limit, sortBy, sortOrder, search, ...filters } = query;
+    const skip = page
+      ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
+      : 1;
+    const take = limit ? parseInt(limit) : 10;
+
+    let orderBy = undefined;
+    if (sortBy) {
+      orderBy = {
+        [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+      };
+    }
+    let allFilters = { ...filters };
+    if (search) {
+      allFilters = {
+        ...allFilters,
+        AND: [
+          {
+            email: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    }
+
+    return this.prisma.user.findMany({
+      where: allFilters,
+      skip,
+      take,
+      orderBy,
+    });
   }
 
   async findOne(id: string): Promise<User | null> {

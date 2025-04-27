@@ -11,6 +11,7 @@ async function bootstrap(): Promise<void> {
     .setTitle('Hotel Management API')
     .setDescription('The Hotel Management API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

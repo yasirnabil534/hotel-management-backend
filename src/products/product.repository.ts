@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Product } from './product.entity';
 import { CreateProductDto, UpdateProductDto } from './product.dto';
+import { Product } from './product.entity';
 import { IProductRepository } from './product.interface';
 
 @Injectable()
@@ -14,8 +14,40 @@ export class ProductRepository implements IProductRepository {
     });
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.prisma.product.findMany();
+  async findAll(query: Record<string, any>): Promise<Product[]> {
+    const { page, limit, sortBy, sortOrder, search, ...filters } = query;
+    const skip = page
+      ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
+      : 1;
+    const take = limit ? parseInt(limit) : 10;
+
+    let orderBy = undefined;
+    if (sortBy) {
+      orderBy = {
+        [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+      };
+    }
+    let allFilters = { ...filters };
+    if (search) {
+      allFilters = {
+        ...allFilters,
+        AND: [
+          {
+            name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    }
+
+    return this.prisma.product.findMany({
+      where: allFilters,
+      skip,
+      take,
+      orderBy,
+    });
   }
 
   async findOne(id: string): Promise<Product> {
@@ -36,7 +68,10 @@ export class ProductRepository implements IProductRepository {
     });
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
     return this.prisma.product.update({
       where: { id },
       data: updateProductDto,
