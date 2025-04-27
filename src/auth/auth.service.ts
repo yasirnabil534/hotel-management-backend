@@ -13,7 +13,10 @@ export class AuthService implements IAuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  async validateUser(email: string, password: string): Promise<Omit<User, 'password'>> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<Omit<User, 'password'>> {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -31,8 +34,8 @@ export class AuthService implements IAuthService {
   async login(user: Omit<User, 'password'>) {
     const payload = { email: user.email, sub: user.id };
     return {
-      access_token: this.jwtService.sign(payload, { expiresIn: '15m' }),
-      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      access_token: this.jwtService.sign(payload, { expiresIn: '3650d' }),
+      refresh_token: this.jwtService.sign(payload, { expiresIn: '3650d' }),
       user: user,
     };
   }

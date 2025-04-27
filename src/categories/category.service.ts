@@ -14,8 +14,8 @@ export class CategoryService implements ICategoryService {
     return this.categoryRepository.create(createCategoryDto);
   }
 
-  findAll(): Promise<Category[]> {
-    return this.categoryRepository.findAll();
+  findAll(query: Record<string, any>): Promise<Category[]> {
+    return this.categoryRepository.findAll(query);
   }
 
   findOne(id: string): Promise<Category | null> {

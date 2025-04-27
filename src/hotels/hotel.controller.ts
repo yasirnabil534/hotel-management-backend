@@ -8,12 +8,16 @@ import {
   Param,
   Post,
   Put,
+  Req,
   Res,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { FastifyReply } from 'fastify';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateHotelDto, UpdateHotelDto } from './hotel.dto';
 import { IHotelService } from './hotel.interface';
+import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { Hotel } from './hotel.entity';
 
 @ApiTags('Hotel APIs')
 @Controller('/hotels')
@@ -55,10 +59,48 @@ export class HotelController {
 
   @Get()
   @ApiOperation({ summary: 'Get all hotels' })
-  @ApiResponse({ status: 200, description: 'Return all hotels.' })
-  async findAll(@Res() reply: FastifyReply): Promise<void> {
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items per page',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search term for filtering categories',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    description: 'Field to sort by',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order (ascending or descending)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all categories.',
+    type: [Hotel],
+  })
+  @UseInterceptors(QueryProcessorInterceptor)
+  async findAll(
+    @Req() req: FastifyRequest,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
     try {
-      const hotels = await this.hotelService.findAll();
+      const hotels = await this.hotelService.findAll(req.query);
       reply.send({
         statusCode: 200,
         statusMessage: 'Success',

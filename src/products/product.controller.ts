@@ -9,12 +9,14 @@ import {
   Post,
   Put,
   Res,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply } from 'fastify';
 import { CreateProductDto, UpdateProductDto } from './product.dto';
 import { Product } from './product.entity';
 import { IProductService } from './product.interface';
+import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
 
 @ApiTags('Product APIs')
 @Controller('/products')
@@ -58,7 +60,42 @@ export class ProductController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all products' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items per page',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search term for filtering categories',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    description: 'Field to sort by',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order (ascending or descending)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all categories.',
+    type: [Product],
+  })
+  @UseInterceptors(QueryProcessorInterceptor)
   @ApiResponse({
     status: 200,
     description: 'Return all products.',

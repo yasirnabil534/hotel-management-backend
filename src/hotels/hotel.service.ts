@@ -7,15 +7,15 @@ import { IHotelRepository, IHotelService } from './hotel.interface';
 export class HotelService implements IHotelService {
   constructor(
     @Inject('IHotelRepository')
-    private hotelRepository: IHotelRepository
+    private hotelRepository: IHotelRepository,
   ) {}
 
   async create(createHotelDto: CreateHotelDto): Promise<Hotel> {
     return this.hotelRepository.create(createHotelDto);
   }
 
-  async findAll(): Promise<Hotel[]> {
-    return this.hotelRepository.findAll();
+  async findAll(query?: Record<string, any>): Promise<Hotel[]> {
+    return this.hotelRepository.findAll(query || {});
   }
 
   async findOne(id: string): Promise<Hotel> {

@@ -9,10 +9,13 @@ import {
   Param,
   Post,
   Put,
+  Req,
   Res,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { FastifyReply } from 'fastify';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
 import { UserType } from '../utils/enums/user-type.enum';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { User } from './user.entity';
@@ -96,6 +99,40 @@ export class UsersController {
     }
   }
 
+  @Post('/hotel-admin')
+  @ApiOperation({ summary: 'Create a new hotel admin user' })
+  @ApiResponse({
+    status: 201,
+    description: 'The staff user has been successfully created.',
+    type: User,
+  })
+  async createHotelAdmin(
+    @Body() createUser: CreateUserDto,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    try {
+      const user = await this.usersService.create({
+        ...createUser,
+        type: UserType.HOTEL_MANAGEMENT,
+      });
+      reply.code(201).send({
+        statusCode: 201,
+        statusMessage: 'Success',
+        data: user,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error creating staff user: ${error.message}`,
+        error.stack,
+      );
+      reply.code(500).send({
+        statusCode: 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
   @Post('/staff')
   @ApiOperation({ summary: 'Create a new staff user' })
   @ApiResponse({
@@ -110,7 +147,7 @@ export class UsersController {
     try {
       const user = await this.usersService.create({
         ...createUser,
-        type: UserType.HOTEL_MANAGEMENT,
+        type: UserType.HOTEL_STAFF,
       });
       reply.code(201).send({
         statusCode: 201,
@@ -164,12 +201,81 @@ export class UsersController {
     }
   }
 
+  @Post('/user')
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'The customer user has been successfully created.',
+    type: User,
+  })
+  async createUser(
+    @Body() createUser: CreateUserDto,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    try {
+      const user = await this.usersService.create({
+        ...createUser,
+        type: UserType.USER,
+      });
+      reply.code(201).send({
+        statusCode: 201,
+        statusMessage: 'Success',
+        data: user,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error creating customer user: ${error.message}`,
+        error.stack,
+      );
+      reply.code(500).send({
+        statusCode: 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'Return all users.', type: [User] })
-  async findAll(@Res() reply: FastifyReply): Promise<void> {
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items per page',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search term for filtering categories',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    description: 'Field to sort by',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order (ascending or descending)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all categories.',
+    type: [User],
+  })
+  @UseInterceptors(QueryProcessorInterceptor)
+  async findAll(@Req() req: FastifyRequest, @Res() reply: FastifyReply): Promise<void> {
     try {
-      const users = await this.usersService.findAll();
+      const users = await this.usersService.findAll(req.query);
       reply.send({
         statusCode: 200,
         statusMessage: 'Success',

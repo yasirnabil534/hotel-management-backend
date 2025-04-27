@@ -3,7 +3,7 @@ import { CreateHotelDto, UpdateHotelDto } from './hotel.dto';
 
 export interface IHotelRepository {
   create(createHotelDto: CreateHotelDto): Promise<Hotel>;
-  findAll(): Promise<Hotel[]>;
+  findAll(query: Record<string, any>): Promise<Hotel[]>;
   findOne(id: string): Promise<Hotel | null>;
   update(id: string, updateHotelDto: UpdateHotelDto): Promise<Hotel>;
   remove(id: string): Promise<void>;
@@ -11,7 +11,7 @@ export interface IHotelRepository {
 
 export interface IHotelService {
   create(createHotelDto: CreateHotelDto): Promise<Hotel>;
-  findAll(): Promise<Hotel[]>;
+  findAll(query: Record<string, any>): Promise<Hotel[]>;
   findOne(id: string): Promise<Hotel>;
   update(id: string, updateHotelDto: UpdateHotelDto): Promise<Hotel>;
   remove(id: string): Promise<void>;

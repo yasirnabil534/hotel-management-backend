@@ -14,8 +14,8 @@ export class ProductService implements IProductService {
     return this.productRepository.create(createProductDto);
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productRepository.findAll();
+  async findAll(query?: Record<string, any>): Promise<Product[]> {
+    return this.productRepository.findAll(query || {});
   }
 
   async findOne(id: string): Promise<Product> {

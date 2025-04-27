@@ -29,11 +29,12 @@ module.exports = {
     'prettier/prettier': ['warn', {
       'singleQuote': true,
       'semi': true,
-      'trailingComma': 'es5',
-      'printWidth': 100,
+      'trailingComma': 'all',
+      'printWidth': 80,
       'tabWidth': 2,
-      'endOfLine': 'auto',
-      'nextLine': 'disable'
+      'endOfLine': 'lf',
+      'bracketSpacing': true,
+      'arrowParens': 'avoid'
     }],
   },
 };

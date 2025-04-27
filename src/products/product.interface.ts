@@ -13,7 +13,7 @@ export interface IProductService {
 
 export interface IProductRepository {
   create(createProductDto: CreateProductDto): Promise<Product>;
-  findAll(): Promise<Product[]>;
+  findAll(query: Record<string, any>): Promise<Product[]>;
   findOne(id: string): Promise<Product>;
   findByService(serviceId: string): Promise<Product[]>;
   findByHotel(hotelId: string): Promise<Product[]>;

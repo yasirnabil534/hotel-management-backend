@@ -3,7 +3,7 @@ import { CreateCategoryDto, UpdateCategoryDto } from './category.dto';
 
 export interface ICategoryRepository {
   create(createCategoryDto: CreateCategoryDto): Promise<Category>;
-  findAll(): Promise<Category[]>;
+  findAll(query: Record<string, any>): Promise<Category[]>;
   findOne(id: string): Promise<Category | null>;
   findByHotel(hotelId: string): Promise<Category[]>;
   findByService(serviceId: string): Promise<Category[]>;
@@ -13,7 +13,7 @@ export interface ICategoryRepository {
 
 export interface ICategoryService {
   create(createCategoryDto: CreateCategoryDto): Promise<Category>;
-  findAll(): Promise<Category[]>;
+  findAll(query: Record<string, any>): Promise<Category[]>;
   findOne(id: string): Promise<Category | null>;
   findByHotel(hotelId: string): Promise<Category[]>;
   findByService(serviceId: string): Promise<Category[]>;
