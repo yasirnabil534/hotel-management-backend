@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Res,
   UseInterceptors,
 } from '@nestjs/common';
@@ -96,14 +97,12 @@ export class ServicesController {
     type: [Service],
   })
   @UseInterceptors(QueryProcessorInterceptor)
-  @ApiResponse({
-    status: 200,
-    description: 'Return all services.',
-    type: [Service],
-  })
-  async findAll(@Res() reply: FastifyReply): Promise<void> {
+  async findAll(
+    @Query() query: Record<string, any>,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
     try {
-      const services = await this.servicesService.findAll();
+      const services = await this.servicesService.findAll(query);
       reply.send({
         statusCode: 200,
         statusMessage: 'Success',

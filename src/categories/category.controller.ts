@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Logger, Res, UseInterceptors, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Inject,
+  Logger,
+  Res,
+  UseInterceptors,
+  Req,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { ICategoryService } from './category.interface';
@@ -6,7 +19,7 @@ import { CreateCategoryDto, UpdateCategoryDto } from './category.dto';
 import { Category } from './category.entity';
 import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
 
-@ApiTags('categories')
+@ApiTags('Categories')
 @Controller('/categories')
 export class CategoryController {
   private readonly logger = new Logger(CategoryController.name);

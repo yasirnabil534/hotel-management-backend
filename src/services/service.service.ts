@@ -30,7 +30,10 @@ export class ServicesService implements IServiceService {
     return this.serviceRepository.findByHotel(hotelId);
   }
 
-  async update(id: string, updateServiceDto: UpdateServiceDto): Promise<Service> {
+  async update(
+    id: string,
+    updateServiceDto: UpdateServiceDto,
+  ): Promise<Service> {
     try {
       return await this.serviceRepository.update(id, updateServiceDto);
     } catch (error) {

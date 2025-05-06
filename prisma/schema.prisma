@@ -83,3 +83,13 @@ model Category {
   hotel   Hotel     @relation(fields: [hotelId], references: [id])
   Product Product[]
 }
+
+model ServiceTemplate {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  image       String
+  description String
+  link        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
