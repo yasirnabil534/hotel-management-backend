@@ -37,7 +37,8 @@ model Hotel {
   owner    User       @relation(fields: [ownerId], references: [id])
   services Service[]
   products Product[]
-  Category Category[]
+  category Category[]
+  systemService SystemService[]
 }
 
 model Service {
@@ -50,7 +51,7 @@ model Service {
 
   hotel    Hotel      @relation(fields: [hotelId], references: [id])
   products Product[]
-  Category Category[]
+  category Category[]
 }
 
 model Product {
@@ -81,7 +82,7 @@ model Category {
 
   service Service   @relation(fields: [serviceId], references: [id])
   hotel   Hotel     @relation(fields: [hotelId], references: [id])
-  Product Product[]
+  product Product[]
 }
 
 model ServiceTemplate {
@@ -92,4 +93,19 @@ model ServiceTemplate {
   link        String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  systemService SystemService[]
+}
+
+model SystemService {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  name                String?
+  image               String?
+  description         String?
+  link                String?
+  hotelId             String   @db.ObjectId
+  serviceTemplateId   String   @db.ObjectId
+
+  hotel               Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  systemService       ServiceTemplate   @relation(fields: [serviceTemplateId], references: [id], onDelete: Cascade)
 }

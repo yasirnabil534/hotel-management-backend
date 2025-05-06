@@ -36,7 +36,10 @@ export class CategoryController {
     description: 'The category has been successfully created.',
     type: Category,
   })
-  async create(@Body() createCategoryDto: CreateCategoryDto, @Res() reply: FastifyReply): Promise<void> {
+  async create(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
     try {
       const category = await this.categoryService.create(createCategoryDto);
       reply.code(201).send({
@@ -45,7 +48,10 @@ export class CategoryController {
         data: category,
       });
     } catch (error) {
-      this.logger.error(`Error creating category: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating category: ${error.message}`,
+        error.stack,
+      );
       reply.code(500).send({
         statusCode: 500,
         statusMessage: 'Failed',
@@ -104,7 +110,10 @@ export class CategoryController {
         data: categories,
       });
     } catch (error) {
-      this.logger.error(`Error fetching all categories: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching all categories: ${error.message}`,
+        error.stack,
+      );
       reply.code(500).send({
         statusCode: 500,
         statusMessage: 'Failed',
@@ -115,9 +124,16 @@ export class CategoryController {
 
   @Get('/:id')
   @ApiOperation({ summary: 'Get a category by id' })
-  @ApiResponse({ status: 200, description: 'Return the category.', type: Category })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the category.',
+    type: Category,
+  })
   @ApiResponse({ status: 404, description: 'Category not found.' })
-  async findOne(@Param('id') id: string, @Res() reply: FastifyReply): Promise<void> {
+  async findOne(
+    @Param('id') id: string,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
     try {
       const category = await this.categoryService.findOne(id);
       reply.send({
@@ -126,7 +142,10 @@ export class CategoryController {
         data: category,
       });
     } catch (error) {
-      this.logger.error(`Error fetching category with id ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching category with id ${id}: ${error.message}`,
+        error.stack,
+      );
       reply.code(404).send({
         statusCode: 404,
         statusMessage: 'Failed',
@@ -142,7 +161,10 @@ export class CategoryController {
     description: 'Return all categories for the hotel.',
     type: [Category],
   })
-  async findByHotel(@Param('hotelId') hotelId: string, @Res() reply: FastifyReply): Promise<void> {
+  async findByHotel(
+    @Param('hotelId') hotelId: string,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
     try {
       const categories = await this.categoryService.findByHotel(hotelId);
       reply.send({
@@ -151,7 +173,10 @@ export class CategoryController {
         data: categories,
       });
     } catch (error) {
-      this.logger.error(`Error fetching categories for hotel ${hotelId}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching categories for hotel ${hotelId}: ${error.message}`,
+        error.stack,
+      );
       reply.code(500).send({
         statusCode: 500,
         statusMessage: 'Failed',
@@ -167,7 +192,10 @@ export class CategoryController {
     description: 'Return all categories for the service.',
     type: [Category],
   })
-  async findByService(@Param('serviceId') serviceId: string, @Res() reply: FastifyReply): Promise<void> {
+  async findByService(
+    @Param('serviceId') serviceId: string,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
     try {
       const categories = await this.categoryService.findByService(serviceId);
       reply.send({
@@ -176,7 +204,10 @@ export class CategoryController {
         data: categories,
       });
     } catch (error) {
-      this.logger.error(`Error fetching categories for service ${serviceId}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching categories for service ${serviceId}: ${error.message}`,
+        error.stack,
+      );
       reply.code(500).send({
         statusCode: 500,
         statusMessage: 'Failed',
@@ -206,7 +237,10 @@ export class CategoryController {
         data: category,
       });
     } catch (error) {
-      this.logger.error(`Error updating category with id ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error updating category with id ${id}: ${error.message}`,
+        error.stack,
+      );
       reply.code(404).send({
         statusCode: 404,
         statusMessage: 'Failed',
@@ -217,9 +251,15 @@ export class CategoryController {
 
   @Delete('/:id')
   @ApiOperation({ summary: 'Delete a category' })
-  @ApiResponse({ status: 200, description: 'The category has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The category has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'Category not found.' })
-  async remove(@Param('id') id: string, @Res() reply: FastifyReply): Promise<void> {
+  async remove(
+    @Param('id') id: string,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
     try {
       await this.categoryService.remove(id);
       reply.code(200).send({
@@ -228,7 +268,10 @@ export class CategoryController {
         data: 'Category deleted successfully',
       });
     } catch (error) {
-      this.logger.error(`Error deleting category with id ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error deleting category with id ${id}: ${error.message}`,
+        error.stack,
+      );
       reply.code(404).send({
         statusCode: 404,
         statusMessage: 'Failed',

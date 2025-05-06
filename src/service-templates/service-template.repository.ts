@@ -4,10 +4,8 @@ import {
   CreateServiceTemplateDto,
   UpdateServiceTemplateDto,
 } from './service-template.dto';
-import {
-  IServiceTemplateRepository,
-  ServiceTemplate,
-} from './service-template.interface';
+import { IServiceTemplateRepository } from './service-template.interface';
+import { ServiceTemplate } from './service-template.entity';
 
 @Injectable()
 export class ServiceTemplateRepository implements IServiceTemplateRepository {

@@ -8,11 +8,12 @@ import {
   Param,
   Post,
   Put,
+  Req,
   Res,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateProductDto, UpdateProductDto } from './product.dto';
 import { Product } from './product.entity';
 import { IProductService } from './product.interface';
@@ -101,9 +102,12 @@ export class ProductController {
     description: 'Return all products.',
     type: [Product],
   })
-  async findAll(@Res() reply: FastifyReply): Promise<void> {
+  async findAll(
+    @Req() req: FastifyRequest,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
     try {
-      const products = await this.productService.findAll();
+      const products = await this.productService.findAll(req.query);
       reply.send({
         statusCode: 200,
         statusMessage: 'Success',
