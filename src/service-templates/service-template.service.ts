@@ -4,7 +4,7 @@ import {
   CreateServiceTemplateDto,
   UpdateServiceTemplateDto,
 } from './service-template.dto';
-import { ServiceTemplate } from './service-template.interface';
+import { ServiceTemplate } from './service-template.dto';
 
 @Injectable()
 export class ServiceTemplateService {

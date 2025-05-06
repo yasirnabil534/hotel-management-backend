@@ -28,5 +28,5 @@ export class Hotel {
   updatedAt: Date;
 
   @ApiProperty({ description: 'The owner of the hotel', type: () => User })
-  owner: User;
+  owner?: User;
 }

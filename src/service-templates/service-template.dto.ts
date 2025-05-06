@@ -52,3 +52,14 @@ export class UpdateServiceTemplateDto {
   @IsString()
   link?: string;
 }
+
+
+export interface ServiceTemplate {
+  id: string;
+  name: string;
+  image: string;
+  description: string;
+  link: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

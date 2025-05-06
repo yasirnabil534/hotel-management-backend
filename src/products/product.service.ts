@@ -34,7 +34,10 @@ export class ProductService implements IProductService {
     return this.productRepository.findByHotel(hotelId);
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
     try {
       return await this.productRepository.update(id, updateProductDto);
     } catch (error) {
