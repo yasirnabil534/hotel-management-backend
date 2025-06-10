@@ -18,6 +18,11 @@ export interface ISystemServiceRepository {
   ): Promise<SystemService>;
   remove(id: string): Promise<void>;
   findServicetemplateById(id: string): Promise<ServiceTemplate>;
+  changeStatus(
+    id: string,
+    status: boolean,
+  ): Promise<SystemService>;
+  findInactiveServices(): Promise<SystemService[]>;
 }
 
 export interface ISystemServiceService {
@@ -32,4 +37,9 @@ export interface ISystemServiceService {
     updateSystemServiceDto: UpdateSystemServiceDto,
   ): Promise<SystemService>;
   remove(id: string): Promise<void>;
+  changeStatus(
+    id: string,
+    status: boolean,
+  ): Promise<SystemService>;
+  findInactiveServices(): Promise<SystemService[]>;
 }
