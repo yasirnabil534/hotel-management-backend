@@ -74,4 +74,16 @@ export class DynamicServicesService implements ISystemServiceService {
       throw error;
     }
   }
+
+  async changeStatus(id: string, status: boolean): Promise<SystemService> {
+    try {
+      return await this.systemServiceRepository.changeStatus(id, status);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findInactiveServices(): Promise<SystemService[]> {
+    return this.systemServiceRepository.findInactiveServices();
+  }
 }

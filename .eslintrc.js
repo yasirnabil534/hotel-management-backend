@@ -32,7 +32,7 @@ module.exports = {
       'trailingComma': 'all',
       'printWidth': 80,
       'tabWidth': 2,
-      'endOfLine': 'lf',
+      'endOfLine': ['lf', 'crlf'],
       'bracketSpacing': true,
       'arrowParens': 'avoid'
     }],

@@ -47,6 +47,7 @@ export class DynamicServicesRepository implements ISystemServiceRepository {
     if (search) {
       allFilters = {
         ...allFilters,
+        isActive: true,
         AND: [
           {
             name: {
@@ -113,6 +114,19 @@ export class DynamicServicesRepository implements ISystemServiceRepository {
   async findServicetemplateById(id: string): Promise<ServiceTemplate> {
     return this.prisma.serviceTemplate.findFirst({
       where: { id },
+    });
+  }
+
+  async changeStatus(id: string, status: boolean): Promise<SystemService> {
+    return this.prisma.systemService.update({
+      where: { id },
+      data: { isActive: status },
+    });
+  }
+
+  async findInactiveServices(): Promise<SystemService[]> {
+    return this.prisma.systemService.findMany({
+      where: { isActive: false },
     });
   }
 }

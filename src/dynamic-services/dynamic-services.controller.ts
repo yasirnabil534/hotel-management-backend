@@ -246,4 +246,67 @@ export class DynamicServicesController {
       });
     }
   }
+
+  @Put('/change-status/:id')
+  @ApiOperation({ summary: 'Change the status of a system service' })
+  @ApiResponse({
+    status: 200,
+    description: 'The system service status has been successfully changed.',
+  })
+  async changeStatus(
+    @Param('id') id: string,
+    @Body() body: { status: boolean },
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    try {
+      const service = await this.systemServiceService.changeStatus(
+        id,
+        body.status,
+      );
+      reply.code(200).send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: service,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error changing system service status: ${error.message}`,
+        error.stack,
+      );
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      })
+    }
+  }
+
+  @Get('/inactive-services')
+  @ApiOperation({ summary: 'Get all inactive system services' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all inactive system services.',
+  })
+  async findInactiveServices(
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    try {
+      const services = await this.systemServiceService.findInactiveServices();
+      reply.code(200).send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: services,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error fetching inactive system services: ${error.message}`,
+        error.stack,
+      );
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      })
+    }
+  }
 }
