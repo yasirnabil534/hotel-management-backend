@@ -10,6 +10,9 @@ import { UsersModule } from './users/user.module';
 import { CategoryModule } from './categories/category.module';
 import { DynamicServicesModule } from './dynamic-services/dynamic-services.module';
 import { ServiceTemplateModule } from './service-templates/service-template.module';
+import { OrderProductModule } from './order-products/order-product.module';
+import { OrderModule } from './orders/order.module';
+import { CartModule } from './carts/cart.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { ServiceTemplateModule } from './service-templates/service-template.modu
     CategoryModule,
     DynamicServicesModule,
     ServiceTemplateModule,
+    OrderModule,
+    OrderProductModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [AppService],

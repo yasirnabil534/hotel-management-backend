@@ -1,0 +1,126 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateOrderDto, UpdateOrderDto } from './order.dto';
+import { IOrderRepository } from './order.interface';
+import { Order } from './order.dto';
+
+@Injectable()
+export class OrderRepository implements IOrderRepository {
+  constructor(private prisma: PrismaService) {}
+
+  async create(createOrderDto: CreateOrderDto): Promise<Order> {
+    const { orderProducts, ...orderData } = createOrderDto;
+
+    return this.prisma.$transaction(async (prisma) => {
+      // Create the order first
+      const order = await prisma.order.create({
+        data: orderData as any,
+      });
+
+      // Create all order products with the new orderId
+      await prisma.orderProduct.createMany({
+        data: orderProducts.map(product => ({
+          ...product,
+          orderId: order.id
+        })),
+      });
+
+      // Return the order with its products
+      return prisma.order.findUnique({
+        where: { id: order.id },
+        include: {
+          user: true,
+          hotel: true,
+          OrderProduct: true,
+        },
+      });
+    });
+  }
+
+  async findAll(query?: Record<string, any>): Promise<Order[]> {
+    const { page, limit, sortBy, sortOrder, search, ...filters } = query || {};
+    const skip = page ? (parseInt(page) - 1) * parseInt(limit || '10') : 0;
+    const take = limit ? parseInt(limit) : 10;
+
+    let orderBy = undefined;
+    if (sortBy) {
+      orderBy = {
+        [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+      };
+    }
+
+    let allFilters = { ...filters };
+    if (search) {
+      allFilters = {
+        ...allFilters,
+        OR: [
+          { status: { contains: search, mode: 'insensitive' } },
+          { id: { contains: search, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    return this.prisma.order.findMany({
+      where: allFilters,
+      skip,
+      take,
+      orderBy,
+      include: {
+        user: true,
+        hotel: true,
+        OrderProduct: true,
+      },
+    });
+  }
+
+  async findOne(id: string): Promise<Order | null> {
+    return this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        hotel: true,
+        OrderProduct: true,
+      },
+    });
+  }
+
+  async findByUser(userId: string): Promise<Order[]> {
+    return this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        user: true,
+        hotel: true,
+        OrderProduct: true,
+      },
+    });
+  }
+
+  async findByHotel(hotelId: string): Promise<Order[]> {
+    return this.prisma.order.findMany({
+      where: { hotelId },
+      include: {
+        user: true,
+        hotel: true,
+        OrderProduct: true,
+      },
+    });
+  }
+
+  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
+    return this.prisma.order.update({
+      where: { id },
+      data: updateOrderDto,
+      include: {
+        user: true,
+        hotel: true,
+        OrderProduct: true,
+      },
+    });
+  }
+
+  async remove(id: string): Promise<void> {
+    this.prisma.order.delete({
+      where: { id },
+    });
+  }
+}
