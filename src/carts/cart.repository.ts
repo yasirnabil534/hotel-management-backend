@@ -8,63 +8,91 @@ export class CartRepository implements ICartRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string): Promise<Cart> {
-    return this.prisma.cart.create({
-      data: { userId }
-    });
+    try {
+      return this.prisma.cart.create({
+        data: { userId }
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findById(id: string): Promise<Cart & { CartItem: CartItem[] }> {
-    return this.prisma.cart.findUnique({
-      where: { id },
-      include: {
-        CartItem: {
-          include: { product: true }
+  async findById(id: string): Promise<Cart & { CartItem: CartItem[] }> {
+    try {
+      return this.prisma.cart.findUnique({
+        where: { id },
+        include: {
+          CartItem: {
+            include: { product: true }
+          }
         }
-      }
-    });
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findByUser(userId: string): Promise<Cart & { CartItem: CartItem[] }> {
-    return this.prisma.cart.findFirst({
-      where: { userId },
-      include: {
-        CartItem: {
-          include: { product: true }
+    try {
+      return this.prisma.cart.findFirst({
+        where: { userId },
+        include: {
+          CartItem: {
+            include: { product: true }
+          }
         }
-      }
-    });
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async addItem(cartId: string, productId: string, quantity: number, price: number): Promise<CartItem> {
-    return this.prisma.cartItem.create({
-      data: {
-        cartId,
-        productId,
-        quantity,
-        price
-      }
-    });
+    try {
+      return this.prisma.cartItem.create({
+        data: {
+          cartId,
+          productId,
+          quantity,
+          price
+        }
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async updateItemQuantity(itemId: string, quantity: number): Promise<CartItem> {
-    return this.prisma.cartItem.update({
-      where: { id: itemId },
-      data: { quantity }
-    });
+    try {
+      return this.prisma.cartItem.update({
+        where: { id: itemId },
+        data: { quantity }
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async removeItem(itemId: string): Promise<CartItem> {
-    return this.prisma.cartItem.delete({
-      where: { id: itemId }
-    });
+    try {
+      return this.prisma.cartItem.delete({
+        where: { id: itemId }
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async clear(cartId: string): Promise<Cart> {
-    await this.prisma.cartItem.deleteMany({
-      where: { cartId }
-    });
-    return this.prisma.cart.findUnique({
-      where: { id: cartId }
-    });
+    try {
+      await this.prisma.cartItem.deleteMany({
+        where: { cartId }
+      });
+      return this.prisma.cart.findUnique({
+        where: { id: cartId }
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 }

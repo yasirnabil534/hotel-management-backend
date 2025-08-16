@@ -13,47 +13,79 @@ export class OrderProductService implements IOrderProductService {
   ) {}
 
   async create(createOrderProductDto: CreateOrderProductDto): Promise<OrderProduct> {
-    const orderProduct = await this.orderProductRepository.create(createOrderProductDto);
-    await this.updateOrderTotal(orderProduct.orderId);
-    return orderProduct;
+    try {
+      const orderProduct = await this.orderProductRepository.create(createOrderProductDto);
+      await this.updateOrderTotal(orderProduct.orderId);
+      return orderProduct;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findAll(): Promise<OrderProduct[]> {
-    return this.orderProductRepository.findAll();
+    try {
+      return this.orderProductRepository.findAll();
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findByOrder(orderId: string): Promise<OrderProduct[]> {
-    return this.orderProductRepository.findByOrder(orderId);
+    try {
+      return this.orderProductRepository.findByOrder(orderId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<OrderProduct> {
-    const orderProduct = await this.orderProductRepository.findOne(id);
-    if (!orderProduct) {
-      throw new NotFoundException(`Order Product with ID ${id} not found`);
+    try {
+      const orderProduct = await this.orderProductRepository.findOne(id);
+      if (!orderProduct) {
+        throw new NotFoundException(`Order Product with ID ${id} not found`);
+      }
+      return orderProduct;
+    } catch (error) {
+      throw error;
     }
-    return orderProduct;
   }
 
   async update(id: string, updateOrderProductDto: UpdateOrderProductDto): Promise<OrderProduct> {
-    const orderProduct = await this.findOne(id);
-    const updated = await this.orderProductRepository.update(id, updateOrderProductDto);
-    await this.updateOrderTotal(orderProduct.orderId);
-    return updated;
+    try {
+      const orderProduct = await this.findOne(id);
+      const updated = await this.orderProductRepository.update(id, updateOrderProductDto);
+      await this.updateOrderTotal(orderProduct.orderId);
+      return updated;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async remove(id: string): Promise<OrderProduct> {
-    const orderProduct = await this.findOne(id);
-    const deleted = await this.orderProductRepository.remove(id);
-    await this.updateOrderTotal(orderProduct.orderId);
-    return deleted;
+    try {
+      const orderProduct = await this.findOne(id);
+      const deleted = await this.orderProductRepository.remove(id);
+      await this.updateOrderTotal(orderProduct.orderId);
+      return deleted;
+    } catch (error) {
+      throw error;
+    }
   }
 
   private async updateOrderTotal(orderId: string): Promise<void> {
-    await this.orderService.update(orderId, { total: await this.calculateOrderTotal(orderId) });
+    try {
+      await this.orderService.update(orderId, { total: await this.calculateOrderTotal(orderId) });
+    } catch (error) {
+      throw error;
+    }
   }
 
   private async calculateOrderTotal(orderId: string): Promise<number> {
-    const orderProducts = await this.findByOrder(orderId);
-    return orderProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
+    try {
+      const orderProducts = await this.findByOrder(orderId);
+      return orderProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
+    } catch (error) {
+      throw error;
+    }
   }
 }

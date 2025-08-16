@@ -9,69 +9,99 @@ export class UserRepository implements IUserRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    return this.prisma.user.create({
-      data: createUserDto,
-    });
+    try {
+      return await this.prisma.user.create({
+        data: createUserDto,
+      });
+    } catch (error) {
+      console.error('Error creating user in repository:', error);
+      throw error;
+    }
   }
 
   async findAll(query: Record<string, any>): Promise<User[]> {
-    const { page, limit, sortBy, sortOrder, search, ...filters } = query;
-    const skip = page
-      ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
-      : 1;
-    const take = limit ? parseInt(limit) : 10;
+    try {
+      const { page, limit, sortBy, sortOrder, search, ...filters } = query;
+      const skip = page
+        ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
+        : 1;
+      const take = limit ? parseInt(limit) : 10;
 
-    let orderBy = undefined;
-    if (sortBy) {
-      orderBy = {
-        [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
-      };
-    }
-    let allFilters = { ...filters };
-    if (search) {
-      allFilters = {
-        ...allFilters,
-        AND: [
-          {
-            email: {
-              contains: search,
-              mode: 'insensitive',
+      let orderBy = undefined;
+      if (sortBy) {
+        orderBy = {
+          [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+        };
+      }
+      let allFilters = { ...filters };
+      if (search) {
+        allFilters = {
+          ...allFilters,
+          AND: [
+            {
+              email: {
+                contains: search,
+                mode: 'insensitive',
+              },
             },
-          },
-        ],
-      };
-    }
+          ],
+        };
+      }
 
-    return this.prisma.user.findMany({
-      where: allFilters,
-      skip,
-      take,
-      orderBy,
-    });
+      return await this.prisma.user.findMany({
+        where: allFilters,
+        skip,
+        take,
+        orderBy,
+      });
+    } catch (error) {
+      console.error('Error finding all users in repository:', error);
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { id },
-    });
+    try {
+      return await this.prisma.user.findUnique({
+        where: { id },
+      });
+    } catch (error) {
+      console.error(`Error finding user with id ${id} in repository:`, error);
+      throw error;
+    }
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { email },
-    });
+    try {
+      return await this.prisma.user.findUnique({
+        where: { email },
+      });
+    } catch (error) {
+      console.error(`Error finding user with email ${email} in repository:`, error);
+      throw error;
+    }
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    return this.prisma.user.update({
-      where: { id },
-      data: updateUserDto,
-    });
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: updateUserDto,
+      });
+    } catch (error) {
+      console.error(`Error updating user with id ${id} in repository:`, error);
+      throw error;
+    }
   }
 
   async remove(id: string): Promise<void> {
-    await this.prisma.user.delete({
-      where: { id },
-    });
+    try {
+      await this.prisma.user.delete({
+        where: { id },
+      });
+    } catch (error) {
+      console.error(`Error removing user with id ${id} in repository:`, error);
+      throw error;
+    }
   }
 }

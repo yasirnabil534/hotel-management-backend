@@ -11,38 +11,58 @@ export class OrderService implements IOrderService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    const { orderProducts, ...orderData } = createOrderDto;
-    
-    // Calculate initial total from order products
-    const total = orderProducts.reduce((sum, product) => {
-      return sum + (product.price * product.quantity);
-    }, 0);
+    try {
+      const { orderProducts, ...orderData } = createOrderDto;
+      
+      // Calculate initial total from order products
+      const total = orderProducts.reduce((sum, product) => {
+        return sum + (product.price * product.quantity);
+      }, 0);
 
-    return this.orderRepository.create({
-      ...orderData,
-      total,
-      orderProducts,
-    });
+      return this.orderRepository.create({
+        ...orderData,
+        total,
+        orderProducts,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findAll(query?: Record<string, any>): Promise<Order[]> {
-    return this.orderRepository.findAll(query || {});
+    try {
+      return this.orderRepository.findAll(query || {});
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<Order> {
-    const order = await this.orderRepository.findOne(id);
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
+    try {
+      const order = await this.orderRepository.findOne(id);
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+      return order;
+    } catch (error) {
+      throw error;
     }
-    return order;
   }
 
   async findByUser(userId: string): Promise<Order[]> {
-    return this.orderRepository.findByUser(userId);
+    try {
+      return this.orderRepository.findByUser(userId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findByHotel(hotelId: string): Promise<Order[]> {
-    return this.orderRepository.findByHotel(hotelId);
+    try {
+      return this.orderRepository.findByHotel(hotelId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {

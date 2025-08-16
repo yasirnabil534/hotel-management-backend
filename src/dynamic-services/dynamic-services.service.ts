@@ -19,32 +19,48 @@ export class DynamicServicesService implements ISystemServiceService {
   async create(
     createSystemServiceDto: CreateSystemServiceDto,
   ): Promise<SystemService> {
-    const { name, link, image, description } = await this.systemServiceRepository.findServicetemplateById(
-        createSystemServiceDto.serviceTemplateId,
-    )
-    return this.systemServiceRepository.create({
-      ...createSystemServiceDto,
-      name,
-      link,
-      image,
-      description,
-    });
+    try {
+      const { name, link, image, description } = await this.systemServiceRepository.findServicetemplateById(
+          createSystemServiceDto.serviceTemplateId,
+      )
+      return this.systemServiceRepository.create({
+        ...createSystemServiceDto,
+        name,
+        link,
+        image,
+        description,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findAll(query?: Record<string, any>): Promise<SystemService[]> {
-    return this.systemServiceRepository.findAll(query || {});
+    try {
+      return this.systemServiceRepository.findAll(query || {});
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<SystemService> {
-    const systemService = await this.systemServiceRepository.findOne(id);
-    if (!systemService) {
-      throw new NotFoundException(`System service with ID ${id} not found`);
+    try {
+      const systemService = await this.systemServiceRepository.findOne(id);
+      if (!systemService) {
+        throw new NotFoundException(`System service with ID ${id} not found`);
+      }
+      return systemService;
+    } catch (error) {
+      throw error;
     }
-    return systemService;
   }
 
   async findByHotel(hotelId: string): Promise<SystemService[]> {
-    return this.systemServiceRepository.findByHotel(hotelId);
+    try {
+      return this.systemServiceRepository.findByHotel(hotelId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async update(
@@ -84,6 +100,10 @@ export class DynamicServicesService implements ISystemServiceService {
   }
 
   async findInactiveServices(): Promise<SystemService[]> {
-    return this.systemServiceRepository.findInactiveServices();
+    try {
+      return this.systemServiceRepository.findInactiveServices();
+    } catch (error) {
+      throw error;
+    }
   }
 }

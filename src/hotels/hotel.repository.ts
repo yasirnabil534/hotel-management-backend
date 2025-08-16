@@ -9,67 +9,92 @@ export class HotelRepository implements IHotelRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(createHotelDto: CreateHotelDto): Promise<Hotel> {
-    return this.prisma.hotel.create({
-      data: createHotelDto,
-      include: { owner: true },
-    });
+    try {
+      return await this.prisma.hotel.create({
+        data: createHotelDto,
+        // include: { owner: true },
+      });
+    } catch (error) {
+      console.error('Error creating hotel in repository:', error);
+      throw error;
+    }
   }
 
   async findAll(query: Record<string, any>): Promise<Hotel[]> {
-    const { page, limit, sortBy, sortOrder, search, ...filters } = query;
-    const skip = page
-      ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
-      : 1;
-    const take = limit ? parseInt(limit) : 10;
+    try {
+      const { page, limit, sortBy, sortOrder, search, ...filters } = query;
+      const skip = page
+        ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
+        : 1;
+      const take = limit ? parseInt(limit) : 10;
 
-    let orderBy = undefined;
-    if (sortBy) {
-      orderBy = {
-        [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
-      };
-    }
-    let allFilters = { ...filters };
-    if (search) {
-      allFilters = {
-        ...allFilters,
-        AND: [
-          {
-            name: {
-              contains: search,
-              mode: 'insensitive',
+      let orderBy = undefined;
+      if (sortBy) {
+        orderBy = {
+          [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+        };
+      }
+      let allFilters = { ...filters };
+      if (search) {
+        allFilters = {
+          ...allFilters,
+          AND: [
+            {
+              name: {
+                contains: search,
+                mode: 'insensitive',
+              },
             },
-          },
-        ],
-      };
-    }
+          ],
+        };
+      }
 
-    return this.prisma.hotel.findMany({
-      where: allFilters,
-      skip,
-      take,
-      orderBy,
-      include: { owner: true },
-    });
+      return await this.prisma.hotel.findMany({
+        where: allFilters,
+        skip,
+        take,
+        orderBy,
+        // include: { owner: true },
+      });
+    } catch (error) {
+      console.error('Error finding all hotels in repository:', error);
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<Hotel | null> {
-    return this.prisma.hotel.findUnique({
-      where: { id },
-      include: { owner: true },
-    });
+    try {
+      return await this.prisma.hotel.findUnique({
+        where: { id },
+        // include: { owner: true },
+      });
+    } catch (error) {
+      console.error(`Error finding hotel with id ${id} in repository:`, error);
+      throw error;
+    }
   }
 
   async update(id: string, updateHotelDto: UpdateHotelDto): Promise<Hotel> {
-    return this.prisma.hotel.update({
-      where: { id },
-      data: updateHotelDto,
-      include: { owner: true },
-    });
+    try {
+      return await this.prisma.hotel.update({
+        where: { id },
+        data: updateHotelDto,
+        // include: { owner: true },
+      });
+    } catch (error) {
+      console.error(`Error updating hotel with id ${id} in repository:`, error);
+      throw error;
+    }
   }
 
   async remove(id: string): Promise<void> {
-    await this.prisma.hotel.delete({
-      where: { id },
-    });
+    try {
+      await this.prisma.hotel.delete({
+        where: { id },
+      });
+    } catch (error) {
+      console.error(`Error removing hotel with id ${id} in repository:`, error);
+      throw error;
+    }
   }
 }
