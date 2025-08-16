@@ -13,12 +13,20 @@ export class CartController {
 
   @Get('/user/:userId')
   async getCart(@Param() userId: string) {
-    return this.cartService.getCartByUser(userId);
+    try {
+      return this.cartService.getCartByUser(userId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post('/item/:id')
   async addItem(@Param('id') id: string, @Body() addCartItemDto: AddCartItemDto) {
-    return this.cartService.addItem(id, addCartItemDto.productId, addCartItemDto.quantity);
+    try {
+      return this.cartService.addItem(id, addCartItemDto.productId, addCartItemDto.quantity);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Put('items/:id')
@@ -26,21 +34,37 @@ export class CartController {
     @Param('id') itemId: string,
     @Body() updateCartItemDto: UpdateCartItemDto,
   ) {
-    return this.cartService.updateItemQuantity(itemId, updateCartItemDto.quantity);
+    try {
+      return this.cartService.updateItemQuantity(itemId, updateCartItemDto.quantity);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete('items/:id')
   async removeItem(@Param('id') itemId: string) {
-    return this.cartService.removeItem(itemId);
+    try {
+      return this.cartService.removeItem(itemId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post('/checkout/:userId')
   async checkout(@Param() userId: string) {
-    return this.cartService.checkout(userId);
+    try {
+      return this.cartService.checkout(userId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete('/clear/:userId')
   async clearCart(@Param() userId: string) {
-    return this.cartService.clearCart(userId);
+    try {
+      return this.cartService.clearCart(userId);
+    } catch (error) {
+      throw error;
+    }
   }
 }

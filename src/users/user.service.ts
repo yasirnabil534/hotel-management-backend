@@ -12,25 +12,48 @@ export class UsersService implements IUserService {
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findByEmail(email);
+    try {
+      return await this.userRepository.findByEmail(email);
+    } catch (error) {
+      console.error(`Error finding user with email ${email}:`, error);
+      throw error;
+    }
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 13);
-    createUserDto.password = hashedPassword;
-    return this.userRepository.create(createUserDto);
+    try {
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 13);
+      createUserDto.password = hashedPassword;
+      return await this.userRepository.create(createUserDto);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
   }
 
   async findAll(query?: Record<string, any>): Promise<User[]> {
-    return this.userRepository.findAll(query || {});
+    try {
+      return await this.userRepository.findAll(query || {});
+    } catch (error) {
+      console.error('Error finding all users:', error);
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOne(id);
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    try {
+      const user = await this.userRepository.findOne(id);
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error(`Error finding user with id ${id}:`, error);
+      throw error;
     }
-    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {

@@ -11,19 +11,34 @@ export class HotelService implements IHotelService {
   ) {}
 
   async create(createHotelDto: CreateHotelDto): Promise<Hotel> {
-    return this.hotelRepository.create(createHotelDto);
+    try {
+      return await this.hotelRepository.create(createHotelDto);
+    } catch (error) {
+      console.error('Error creating hotel:', error);
+      throw error;
+    }
   }
 
   async findAll(query?: Record<string, any>): Promise<Hotel[]> {
-    return this.hotelRepository.findAll(query || {});
+    try {
+      return await this.hotelRepository.findAll(query || {});
+    } catch (error) {
+      console.error('Error finding all hotels:', error);
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<Hotel> {
-    const hotel = await this.hotelRepository.findOne(id);
-    if (!hotel) {
-      throw new NotFoundException(`Hotel with ID ${id} not found`);
+    try {
+      const hotel = await this.hotelRepository.findOne(id);
+      if (!hotel) {
+        throw new NotFoundException(`Hotel with ID ${id} not found`);
+      }
+      return hotel;
+    } catch (error) {
+      console.error(`Error finding hotel with id ${id}:`, error);
+      throw error;
     }
-    return hotel;
   }
 
   async update(id: string, updateHotelDto: UpdateHotelDto): Promise<Hotel> {

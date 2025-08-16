@@ -11,27 +11,47 @@ export class ProductService implements IProductService {
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    return this.productRepository.create(createProductDto);
+    try {
+      return this.productRepository.create(createProductDto);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findAll(query?: Record<string, any>): Promise<Product[]> {
-    return this.productRepository.findAll(query || {});
+    try {
+      return this.productRepository.findAll(query || {});
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<Product> {
-    const product = await this.productRepository.findOne(id);
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+    try {
+      const product = await this.productRepository.findOne(id);
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${id} not found`);
+      }
+      return product;
+    } catch (error) {
+      throw error;
     }
-    return product;
   }
 
   async findByService(serviceId: string): Promise<Product[]> {
-    return this.productRepository.findByService(serviceId);
+    try {
+      return this.productRepository.findByService(serviceId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findByHotel(hotelId: string): Promise<Product[]> {
-    return this.productRepository.findByHotel(hotelId);
+    try {
+      return this.productRepository.findByHotel(hotelId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async update(

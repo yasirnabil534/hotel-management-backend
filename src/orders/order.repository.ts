@@ -9,118 +9,146 @@ export class OrderRepository implements IOrderRepository {
   constructor(private prisma: PrismaService) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    const { orderProducts, ...orderData } = createOrderDto;
+    try {
+      const { orderProducts, ...orderData } = createOrderDto;
 
-    return this.prisma.$transaction(async (prisma) => {
-      // Create the order first
-      const order = await prisma.order.create({
-        data: orderData as any,
-      });
+      return this.prisma.$transaction(async (prisma) => {
+        // Create the order first
+        const order = await prisma.order.create({
+          data: orderData as any,
+        });
 
-      // Create all order products with the new orderId
-      await prisma.orderProduct.createMany({
-        data: orderProducts.map(product => ({
-          ...product,
-          orderId: order.id
-        })),
-      });
+        // Create all order products with the new orderId
+        await prisma.orderProduct.createMany({
+          data: orderProducts.map(product => ({
+            ...product,
+            orderId: order.id
+          })),
+        });
 
-      // Return the order with its products
-      return prisma.order.findUnique({
-        where: { id: order.id },
-        include: {
-          user: true,
-          hotel: true,
-          OrderProduct: true,
-        },
+        // Return the order with its products
+        return prisma.order.findUnique({
+          where: { id: order.id },
+          // include: {
+          //   user: true,
+          //   hotel: true,
+          //   OrderProduct: true,
+          // },
+        });
       });
-    });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findAll(query?: Record<string, any>): Promise<Order[]> {
-    const { page, limit, sortBy, sortOrder, search, ...filters } = query || {};
-    const skip = page ? (parseInt(page) - 1) * parseInt(limit || '10') : 0;
-    const take = limit ? parseInt(limit) : 10;
+    try {
+      const { page, limit, sortBy, sortOrder, search, ...filters } = query || {};
+      const skip = page ? (parseInt(page) - 1) * parseInt(limit || '10') : 0;
+      const take = limit ? parseInt(limit) : 10;
 
-    let orderBy = undefined;
-    if (sortBy) {
-      orderBy = {
-        [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
-      };
+      let orderBy = undefined;
+      if (sortBy) {
+        orderBy = {
+          [sortBy]: sortOrder?.toLowerCase() === 'desc' ? 'desc' : 'asc',
+        };
+      }
+
+      let allFilters = { ...filters };
+      if (search) {
+        allFilters = {
+          ...allFilters,
+          OR: [
+            { status: { contains: search, mode: 'insensitive' } },
+            { id: { contains: search, mode: 'insensitive' } },
+          ],
+        };
+      }
+
+      return this.prisma.order.findMany({
+        where: allFilters,
+        skip,
+        take,
+        orderBy,
+        // include: {
+        //   user: true,
+        //   hotel: true,
+        //   OrderProduct: true,
+        // },
+      });
+    } catch (error) {
+      throw error;
     }
-
-    let allFilters = { ...filters };
-    if (search) {
-      allFilters = {
-        ...allFilters,
-        OR: [
-          { status: { contains: search, mode: 'insensitive' } },
-          { id: { contains: search, mode: 'insensitive' } },
-        ],
-      };
-    }
-
-    return this.prisma.order.findMany({
-      where: allFilters,
-      skip,
-      take,
-      orderBy,
-      include: {
-        user: true,
-        hotel: true,
-        OrderProduct: true,
-      },
-    });
   }
 
   async findOne(id: string): Promise<Order | null> {
-    return this.prisma.order.findUnique({
-      where: { id },
-      include: {
-        user: true,
-        hotel: true,
-        OrderProduct: true,
-      },
-    });
+    try {
+      return this.prisma.order.findUnique({
+        where: { id },
+        // include: {
+        //   user: true,
+        //   hotel: true,
+        //   OrderProduct: true,
+        // },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findByUser(userId: string): Promise<Order[]> {
-    return this.prisma.order.findMany({
-      where: { userId },
-      include: {
-        user: true,
-        hotel: true,
-        OrderProduct: true,
-      },
-    });
+    try {
+      return this.prisma.order.findMany({
+        where: { userId },
+        // include: {
+        //   user: true,
+        //   hotel: true,
+        //   OrderProduct: true,
+        // },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findByHotel(hotelId: string): Promise<Order[]> {
-    return this.prisma.order.findMany({
-      where: { hotelId },
-      include: {
-        user: true,
-        hotel: true,
-        OrderProduct: true,
-      },
-    });
+    try {
+      return this.prisma.order.findMany({
+        where: { hotelId },
+        // include: {
+        //   user: true,
+        //   hotel: true,
+        //   OrderProduct: true,
+        // },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
-    return this.prisma.order.update({
-      where: { id },
-      data: updateOrderDto,
-      include: {
-        user: true,
-        hotel: true,
-        OrderProduct: true,
-      },
-    });
+    try {
+      return this.prisma.order.update({
+        where: { id },
+        data: updateOrderDto,
+        // include: {
+        //   user: true,
+        //   hotel: true,
+        //   OrderProduct: true,
+        // },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async remove(id: string): Promise<void> {
-    this.prisma.order.delete({
-      where: { id },
-    });
+    try {
+      await this.prisma.order.delete({
+        where: { id },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 }

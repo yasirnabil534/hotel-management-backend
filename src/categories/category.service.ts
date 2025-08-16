@@ -10,31 +10,66 @@ export class CategoryService implements ICategoryService {
     private categoryRepository: ICategoryRepository
   ) {}
 
-  create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    return this.categoryRepository.create(createCategoryDto);
+  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
+    try {
+      return await this.categoryRepository.create(createCategoryDto);
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw error;
+    }
   }
 
-  findAll(query: Record<string, any>): Promise<Category[]> {
-    return this.categoryRepository.findAll(query);
+  async findAll(query: Record<string, any>): Promise<Category[]> {
+    try {
+      return await this.categoryRepository.findAll(query);
+    } catch (error) {
+      console.error('Error finding all categories:', error);
+      throw error;
+    }
   }
 
-  findOne(id: string): Promise<Category | null> {
-    return this.categoryRepository.findOne(id);
+  async findOne(id: string): Promise<Category | null> {
+    try {
+      return await this.categoryRepository.findOne(id);
+    } catch (error) {
+      console.error(`Error finding category with id ${id}:`, error);
+      throw error;
+    }
   }
 
-  findByHotel(hotelId: string): Promise<Category[]> {
-    return this.categoryRepository.findByHotel(hotelId);
+  async findByHotel(hotelId: string): Promise<Category[]> {
+    try {
+      return await this.categoryRepository.findByHotel(hotelId);
+    } catch (error) {
+      console.error(`Error finding categories for hotel ${hotelId}:`, error);
+      throw error;
+    }
   }
 
-  findByService(serviceId: string): Promise<Category[]> {
-    return this.categoryRepository.findByService(serviceId);
+  async findByService(serviceId: string): Promise<Category[]> {
+    try {
+      return await this.categoryRepository.findByService(serviceId);
+    } catch (error) {
+      console.error(`Error finding categories for service ${serviceId}:`, error);
+      throw error;
+    }
   }
 
-  update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
-    return this.categoryRepository.update(id, updateCategoryDto);
+  async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+    try {
+      return await this.categoryRepository.update(id, updateCategoryDto);
+    } catch (error) {
+      console.error(`Error updating category with id ${id}:`, error);
+      throw error;
+    }
   }
 
-  remove(id: string): Promise<void> {
-    return this.categoryRepository.remove(id);
+  async remove(id: string): Promise<void> {
+    try {
+      return await this.categoryRepository.remove(id);
+    } catch (error) {
+      console.error(`Error removing category with id ${id}:`, error);
+      throw error;
+    }
   }
 }
