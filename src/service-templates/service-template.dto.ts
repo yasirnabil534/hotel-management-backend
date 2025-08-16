@@ -7,10 +7,9 @@ export class CreateServiceTemplateDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ description: 'The image URL of the service template' })
+  @ApiProperty({ description: 'The image URL of the service template', required: false })
   @IsString()
-  @IsNotEmpty()
-  image: string;
+  image?: string;
 
   @ApiProperty({ description: 'The description of the service template' })
   @IsString()
@@ -57,7 +56,7 @@ export class UpdateServiceTemplateDto {
 export interface ServiceTemplate {
   id: string;
   name: string;
-  image: string;
+  image?: string;
   description: string;
   link: string;
   createdAt: Date;

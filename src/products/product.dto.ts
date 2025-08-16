@@ -16,9 +16,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   price: number;
 
-  @ApiProperty({ type: [String], default: [] })
+  @ApiProperty({ type: [String], default: [], required: false })
   @IsString({ each: true })
-  images: string[];
+  images?: string[];
 
   @ApiProperty()
   @IsString()

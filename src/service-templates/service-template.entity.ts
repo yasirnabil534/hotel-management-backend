@@ -10,8 +10,8 @@ export class ServiceTemplate {
   @ApiProperty()
   description: string;
 
-  @ApiProperty()
-  image: string;
+  @ApiProperty({ required: false })
+  image?: string;
 
   @ApiProperty()
   link: string;

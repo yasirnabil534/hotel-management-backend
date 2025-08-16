@@ -54,7 +54,6 @@ model Service {
 
   hotel    Hotel      @relation(fields: [hotelId], references: [id])
   products Product[]
-  category Category[]
 }
 
 model Product {
@@ -62,7 +61,7 @@ model Product {
   name        String
   description String
   price       Float
-  images      String[] @default([])
+  images      String[] @default([])  // Keep as non-optional array with default empty value
   serviceId   String   @db.ObjectId
   hotelId     String   @db.ObjectId
   categoryId  String   @db.ObjectId
@@ -81,11 +80,11 @@ model Category {
   name      String
   serviceId String   @db.ObjectId
   hotelId   String   @db.ObjectId
-  images    String[]
+  images    String[] @default([])  // Change to non-optional with default empty value
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  service Service   @relation(fields: [serviceId], references: [id])
+  service SystemService   @relation(fields: [serviceId], references: [id])
   hotel   Hotel     @relation(fields: [hotelId], references: [id])
   product Product[]
 }
@@ -93,9 +92,9 @@ model Category {
 model ServiceTemplate {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
-  image       String
-  description String
-  link        String
+  image       String?  // Made optional
+  description String?
+  link        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -105,7 +104,7 @@ model ServiceTemplate {
 model SystemService {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   name                String?
-  image               String?
+  image               String?  // Already optional
   description         String?
   link                String?
   hotelId             String   @db.ObjectId
@@ -114,6 +113,7 @@ model SystemService {
 
   hotel               Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   systemService       ServiceTemplate   @relation(fields: [serviceTemplateId], references: [id], onDelete: Cascade)
+  Category  Category[]
 }
 
 model OrderProduct {
