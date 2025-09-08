@@ -1,4 +1,4 @@
-import { CreateOrderDto, UpdateOrderDto, Order } from './order.dto';
+import { CreateOrderDto, Order, UpdateOrderDto } from './order.dto';
 
 export interface IOrderRepository {
   create(createOrderDto: CreateOrderDto): Promise<Order>;
@@ -6,6 +6,7 @@ export interface IOrderRepository {
   findOne(id: string): Promise<Order | null>;
   findByUser(userId: string): Promise<Order[]>;
   findByHotel(hotelId: string): Promise<Order[]>;
+  findByHotelAndUser(hotelId: string, userId: string): Promise<Order[]>;
   update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order>;
   remove(id: string): Promise<void>;
 }
@@ -16,6 +17,7 @@ export interface IOrderService {
   findOne(id: string): Promise<Order>;
   findByUser(userId: string): Promise<Order[]>;
   findByHotel(hotelId: string): Promise<Order[]>;
+  findByHotelAndUser(hotelId: string, userId: string): Promise<Order[]>;
   update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order>;
   remove(id: string): Promise<void>;
 }

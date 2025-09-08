@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, Min, IsArray, ValidateNested, ArrayMinSize } from 'class-validator';
+import { ArrayMinSize, IsArray, IsNumber, IsString, Min, ValidateNested } from 'class-validator';
 import { CreateOrderProductDto } from '../order-products/order-product.dto';
 
 export class CreateOrderDto {
@@ -43,6 +43,7 @@ export interface Order {
   userId: string;
   hotelId: string;
   status: string;
+  hidden: boolean;
   total: number;
   createdAt: Date;
   updatedAt: Date;

@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateOrderDto, UpdateOrderDto } from './order.dto';
+import { CreateOrderDto, Order, UpdateOrderDto } from './order.dto';
 import { IOrderRepository } from './order.interface';
-import { Order } from './order.dto';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -43,7 +42,7 @@ export class OrderRepository implements IOrderRepository {
 
   async findAll(query?: Record<string, any>): Promise<Order[]> {
     try {
-      const { page, limit, sortBy, sortOrder, search, ...filters } = query || {};
+      const { page, limit, sortBy, sortOrder, search, hidden, hotelId, customerId, ...filters } = query || {};
       const skip = page ? (parseInt(page) - 1) * parseInt(limit || '10') : 0;
       const take = limit ? parseInt(limit) : 10;
 
@@ -55,6 +54,24 @@ export class OrderRepository implements IOrderRepository {
       }
 
       let allFilters = { ...filters };
+      
+      // Add hidden filter - default to false unless explicitly set
+      if (hidden !== undefined) {
+        allFilters.hidden = hidden === 'true' || hidden === true;
+      } else {
+        allFilters.hidden = false; // Default to showing only non-hidden orders
+      }
+
+      // Add hotel filter if provided
+      if (hotelId) {
+        allFilters.hotelId = hotelId;
+      }
+
+      // Add customer filter if provided (customerId maps to userId in the database)
+      if (customerId) {
+        allFilters.userId = customerId;
+      }
+      
       if (search) {
         allFilters = {
           ...allFilters,
@@ -83,8 +100,11 @@ export class OrderRepository implements IOrderRepository {
 
   async findOne(id: string): Promise<Order | null> {
     try {
-      return this.prisma.order.findUnique({
-        where: { id },
+      return this.prisma.order.findFirst({
+        where: { 
+          id,
+          hidden: false
+        },
         // include: {
         //   user: true,
         //   hotel: true,
@@ -99,7 +119,10 @@ export class OrderRepository implements IOrderRepository {
   async findByUser(userId: string): Promise<Order[]> {
     try {
       return this.prisma.order.findMany({
-        where: { userId },
+        where: { 
+          userId,
+          hidden: false
+        },
         // include: {
         //   user: true,
         //   hotel: true,
@@ -114,7 +137,29 @@ export class OrderRepository implements IOrderRepository {
   async findByHotel(hotelId: string): Promise<Order[]> {
     try {
       return this.prisma.order.findMany({
-        where: { hotelId },
+        where: { 
+          hotelId,
+          hidden: false
+        },
+        // include: {
+        //   user: true,
+        //   hotel: true,
+        //   OrderProduct: true,
+        // },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findByHotelAndUser(hotelId: string, userId: string): Promise<Order[]> {
+    try {
+      return this.prisma.order.findMany({
+        where: { 
+          hotelId,
+          userId,
+          hidden: false
+        },
         // include: {
         //   user: true,
         //   hotel: true,
