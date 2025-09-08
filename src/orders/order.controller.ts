@@ -1,10 +1,9 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query, Res, Inject, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Logger, Param, Post, Put, Query, Res, UseInterceptors } from '@nestjs/common';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply } from 'fastify';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
 import { CreateOrderDto, UpdateOrderDto } from './order.dto';
 import { IOrderService } from './order.interface';
-import { Logger } from '@nestjs/common';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
 
 @ApiTags('Orders API')
 @Controller('/orders')
@@ -75,6 +74,24 @@ export class OrderController {
     enum: ['asc', 'desc'],
     description: 'Sort order (ascending or descending)',
   })
+  @ApiQuery({
+    name: 'hidden',
+    required: false,
+    type: Boolean,
+    description: 'Include hidden orders (default: false)',
+  })
+  @ApiQuery({
+    name: 'hotelId',
+    required: false,
+    type: String,
+    description: 'Filter orders by hotel ID',
+  })
+  @ApiQuery({
+    name: 'customerId',
+    required: false,
+    type: String,
+    description: 'Filter orders by customer ID (userId)',
+  })
   @UseInterceptors(QueryProcessorInterceptor)
   async findAll(@Query() query: Record<string, any>, @Res() reply: FastifyReply): Promise<void> {
     try {
@@ -86,6 +103,70 @@ export class OrderController {
       });
     } catch (error) {
       this.logger.error(`Error fetching orders: ${error.message}`, error.stack);
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
+  @Get('/hotel/:hotelId')
+  @ApiOperation({ summary: 'Get orders by hotel ID' })
+  async findByHotel(@Param('hotelId') hotelId: string, @Res() reply: FastifyReply): Promise<void> {
+    try {
+      const orders = await this.orderService.findByHotel(hotelId);
+      reply.code(200).send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: orders,
+      });
+    } catch (error) {
+      this.logger.error(`Error fetching orders by hotel: ${error.message}`, error.stack);
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
+  @Get('/customer/:customerId')
+  @ApiOperation({ summary: 'Get orders by customer ID' })
+  async findByCustomer(@Param('customerId') customerId: string, @Res() reply: FastifyReply): Promise<void> {
+    try {
+      const orders = await this.orderService.findByUser(customerId);
+      reply.code(200).send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: orders,
+      });
+    } catch (error) {
+      this.logger.error(`Error fetching orders by customer: ${error.message}`, error.stack);
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
+  @Get('/hotel/:hotelId/customer/:customerId')
+  @ApiOperation({ summary: 'Get orders by hotel and customer ID' })
+  async findByHotelAndCustomer(
+    @Param('hotelId') hotelId: string,
+    @Param('customerId') customerId: string,
+    @Res() reply: FastifyReply
+  ): Promise<void> {
+    try {
+      const orders = await this.orderService.findByHotelAndUser(hotelId, customerId);
+      reply.code(200).send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: orders,
+      });
+    } catch (error) {
+      this.logger.error(`Error fetching orders by hotel and customer: ${error.message}`, error.stack);
       reply.code(error.status || 500).send({
         statusCode: error.status || 500,
         statusMessage: 'Failed',

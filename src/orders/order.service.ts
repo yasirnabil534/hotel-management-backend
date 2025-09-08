@@ -1,7 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateOrderDto, UpdateOrderDto } from './order.dto';
+import { CreateOrderDto, Order, UpdateOrderDto } from './order.dto';
 import { IOrderRepository, IOrderService } from './order.interface';
-import { Order } from './order.dto';
 
 @Injectable()
 export class OrderService implements IOrderService {
@@ -60,6 +59,14 @@ export class OrderService implements IOrderService {
   async findByHotel(hotelId: string): Promise<Order[]> {
     try {
       return this.orderRepository.findByHotel(hotelId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findByHotelAndUser(hotelId: string, userId: string): Promise<Order[]> {
+    try {
+      return this.orderRepository.findByHotelAndUser(hotelId, userId);
     } catch (error) {
       throw error;
     }

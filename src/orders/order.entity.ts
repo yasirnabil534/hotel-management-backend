@@ -14,6 +14,9 @@ export class OrderEntity {
   status: string;
 
   @ApiProperty()
+  hidden: boolean;
+
+  @ApiProperty()
   total: number;
 
   @ApiProperty()
