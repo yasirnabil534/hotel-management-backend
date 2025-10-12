@@ -28,11 +28,15 @@ export class OrderRepository implements IOrderRepository {
         // Return the order with its products
         return prisma.order.findUnique({
           where: { id: order.id },
-          // include: {
-          //   user: true,
-          //   hotel: true,
-          //   OrderProduct: true,
-          // },
+          include: {
+            user: true,
+            hotel: true,
+            OrderProduct: {
+              include: {
+                product: true,
+              },
+            },
+          },
         });
       });
     } catch (error) {
@@ -87,11 +91,21 @@ export class OrderRepository implements IOrderRepository {
         skip,
         take,
         orderBy,
-        // include: {
-        //   user: true,
-        //   hotel: true,
-        //   OrderProduct: true,
-        // },
+        include: {
+          user: true,
+          hotel: true,
+          OrderProduct: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       throw error;
@@ -105,11 +119,21 @@ export class OrderRepository implements IOrderRepository {
           id,
           hidden: false
         },
-        // include: {
-        //   user: true,
-        //   hotel: true,
-        //   OrderProduct: true,
-        // },
+        include: {
+          user: true,
+          hotel: true,
+          OrderProduct: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  id: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       throw error;
@@ -123,11 +147,21 @@ export class OrderRepository implements IOrderRepository {
           userId,
           hidden: false
         },
-        // include: {
-        //   user: true,
-        //   hotel: true,
-        //   OrderProduct: true,
-        // },
+        include: {
+          user: true,
+          hotel: true,
+          OrderProduct: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  id: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       throw error;
@@ -141,11 +175,21 @@ export class OrderRepository implements IOrderRepository {
           hotelId,
           hidden: false
         },
-        // include: {
-        //   user: true,
-        //   hotel: true,
-        //   OrderProduct: true,
-        // },
+        include: {
+          user: true,
+          hotel: true,
+          OrderProduct: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  id: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       throw error;
@@ -160,11 +204,21 @@ export class OrderRepository implements IOrderRepository {
           userId,
           hidden: false
         },
-        // include: {
-        //   user: true,
-        //   hotel: true,
-        //   OrderProduct: true,
-        // },
+        include: {
+          user: true,
+          hotel: true,
+          OrderProduct: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  id: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       throw error;
@@ -176,11 +230,21 @@ export class OrderRepository implements IOrderRepository {
       return this.prisma.order.update({
         where: { id },
         data: updateOrderDto,
-        // include: {
-        //   user: true,
-        //   hotel: true,
-        //   OrderProduct: true,
-        // },
+        include: {
+          user: true,
+          hotel: true,
+          OrderProduct: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  id: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
       });
     } catch (error) {
       throw error;
