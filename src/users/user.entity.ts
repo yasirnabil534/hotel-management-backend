@@ -21,4 +21,7 @@ export class User {
 
   @ApiProperty()
   type: string;
+
+  @ApiProperty({ required: false })
+  hotelId?: string;
 }

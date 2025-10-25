@@ -19,6 +19,11 @@ export class CreateHotelDto {
   @ApiProperty()
   @IsString()
   ownerId: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  hotelDetailsId?: string;
 }
 
 export class UpdateHotelDto {
@@ -43,4 +48,9 @@ export class UpdateHotelDto {
   @Max(5)
   @IsOptional()
   rating: number;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  hotelDetailsId?: string;
 }

@@ -31,6 +31,11 @@ export class CreateUserDto {
   @IsEnum(UserType)
   @IsNotEmpty()
   type: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  hotelId?: string;
 }
 
 export class UpdateUserDto {
@@ -63,4 +68,9 @@ export class UpdateUserDto {
   @IsEnum(UserType)
   @IsOptional()
   type: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  hotelId?: string;
 }

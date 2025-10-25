@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { HotelDetails } from '../hotel-details/hotel-details.entity';
 import { User } from '../users/user.entity';
 
 export class Hotel {
@@ -21,6 +22,9 @@ export class Hotel {
   @ApiProperty({ description: 'The ID of the hotel owner' })
   ownerId: string;
 
+  @ApiProperty({ description: 'The ID of the hotel details', required: false })
+  hotelDetailsId?: string;
+
   @ApiProperty({ description: 'The date when the hotel was created' })
   createdAt: Date;
 
@@ -29,4 +33,7 @@ export class Hotel {
 
   @ApiProperty({ description: 'The owner of the hotel', type: () => User })
   owner?: User;
+
+  @ApiProperty({ description: 'The details of the hotel', type: () => HotelDetails })
+  hotelDetails?: HotelDetails;
 }
