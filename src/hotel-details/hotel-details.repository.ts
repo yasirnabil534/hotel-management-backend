@@ -1,26 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateHotelDto, UpdateHotelDto } from './hotel.dto';
-import { Hotel } from './hotel.entity';
-import { IHotelRepository } from './hotel.interface';
+import { CreateHotelDetailsDto, UpdateHotelDetailsDto } from './hotel-details.dto';
+import { HotelDetails } from './hotel-details.entity';
+import { IHotelDetailsRepository } from './hotel-details.interface';
 
 @Injectable()
-export class HotelRepository implements IHotelRepository {
+export class HotelDetailsRepository implements IHotelDetailsRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(createHotelDto: CreateHotelDto): Promise<Hotel> {
+  async create(createHotelDetailsDto: CreateHotelDetailsDto): Promise<HotelDetails> {
     try {
-      return await this.prisma.hotel.create({
-        data: createHotelDto,
-        include: { hotelDetails: true },
+      return await this.prisma.hotelDetails.create({
+        data: createHotelDetailsDto,
       });
     } catch (error) {
-      console.error('Error creating hotel in repository:', error);
+      console.error('Error creating hotel details in repository:', error);
       throw error;
     }
   }
 
-  async findAll(query: Record<string, any>): Promise<Hotel[]> {
+  async findAll(query: Record<string, any>): Promise<HotelDetails[]> {
     try {
       const { page, limit, sortBy, sortOrder, search, ...filters } = query;
       const skip = page
@@ -40,7 +39,7 @@ export class HotelRepository implements IHotelRepository {
           ...allFilters,
           AND: [
             {
-              name: {
+              email: {
                 contains: search,
                 mode: 'insensitive',
               },
@@ -49,52 +48,50 @@ export class HotelRepository implements IHotelRepository {
         };
       }
 
-      return await this.prisma.hotel.findMany({
+      return await this.prisma.hotelDetails.findMany({
         where: allFilters,
         skip,
         take,
         orderBy,
-        include: { hotelDetails: true },
       });
     } catch (error) {
-      console.error('Error finding all hotels in repository:', error);
+      console.error('Error finding all hotel details in repository:', error);
       throw error;
     }
   }
 
-  async findOne(id: string): Promise<Hotel | null> {
+  async findOne(id: string): Promise<HotelDetails | null> {
     try {
-      return await this.prisma.hotel.findUnique({
+      return await this.prisma.hotelDetails.findUnique({
         where: { id },
-        include: { hotelDetails: true },
       });
     } catch (error) {
-      console.error(`Error finding hotel with id ${id} in repository:`, error);
+      console.error(`Error finding hotel details with id ${id} in repository:`, error);
       throw error;
     }
   }
 
-  async update(id: string, updateHotelDto: UpdateHotelDto): Promise<Hotel> {
+  async update(id: string, updateHotelDetailsDto: UpdateHotelDetailsDto): Promise<HotelDetails> {
     try {
-      return await this.prisma.hotel.update({
+      return await this.prisma.hotelDetails.update({
         where: { id },
-        data: updateHotelDto,
-        include: { hotelDetails: true },
+        data: updateHotelDetailsDto,
       });
     } catch (error) {
-      console.error(`Error updating hotel with id ${id} in repository:`, error);
+      console.error(`Error updating hotel details with id ${id} in repository:`, error);
       throw error;
     }
   }
 
   async remove(id: string): Promise<void> {
     try {
-      await this.prisma.hotel.delete({
+      await this.prisma.hotelDetails.delete({
         where: { id },
       });
     } catch (error) {
-      console.error(`Error removing hotel with id ${id} in repository:`, error);
+      console.error(`Error removing hotel details with id ${id} in repository:`, error);
       throw error;
     }
   }
 }
+

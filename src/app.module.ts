@@ -2,23 +2,25 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { HotelModule } from './hotels/hotel.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { ProductModule } from './products/product.module';
-import { ServicesModule } from './services/service.module';
-import { UsersModule } from './users/user.module';
+import { CartModule } from './carts/cart.module';
 import { CategoryModule } from './categories/category.module';
 import { DynamicServicesModule } from './dynamic-services/dynamic-services.module';
-import { ServiceTemplateModule } from './service-templates/service-template.module';
+import { HotelDetailsModule } from './hotel-details/hotel-details.module';
+import { HotelModule } from './hotels/hotel.module';
 import { OrderProductModule } from './order-products/order-product.module';
 import { OrderModule } from './orders/order.module';
-import { CartModule } from './carts/cart.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ProductModule } from './products/product.module';
+import { ServiceTemplateModule } from './service-templates/service-template.module';
+import { ServicesModule } from './services/service.module';
+import { UsersModule } from './users/user.module';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
     HotelModule,
+    HotelDetailsModule,
     ServicesModule,
     ProductModule,
     PrismaModule,

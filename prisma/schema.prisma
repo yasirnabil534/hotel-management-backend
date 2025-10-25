@@ -19,6 +19,7 @@ model User {
   password  String
   name      String
   type      String
+  hotelId   String?  @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -28,20 +29,22 @@ model User {
 }
 
 model Hotel {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  address   String
-  rating    Float    @default(0)
-  ownerId   String   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  address         String
+  rating          Float    @default(0)
+  ownerId         String   @db.ObjectId
+  hotelDetailsId  String?  @db.ObjectId
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  owner    User       @relation(fields: [ownerId], references: [id])
-  services Service[]
-  products Product[]
-  category Category[]
+  owner         User           @relation(fields: [ownerId], references: [id])
+  hotelDetails  HotelDetails?  @relation(fields: [hotelDetailsId], references: [id])
+  services      Service[]
+  products      Product[]
+  category      Category[]
   systemService SystemService[]
-  Order Order[]
+  Order         Order[]
 }
 
 model Service {
@@ -166,4 +169,18 @@ model CartItem {
 
   cart    Cart    @relation(fields: [cartId], references: [id])
   product Product @relation(fields: [productId], references: [id])
+}
+
+model HotelDetails {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  logo         String?
+  address      String
+  email        String
+  contact      String
+  level        String
+  colorPalate  Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  hotels  Hotel[]
 }
