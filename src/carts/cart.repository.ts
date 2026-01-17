@@ -1,16 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { Cart, CartItem } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ICartRepository } from './cart.interface';
-import { Cart, CartItem } from '@prisma/client';
 
 @Injectable()
 export class CartRepository implements ICartRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string): Promise<Cart> {
+  async create(entityId: string, entityType: 'human' | 'room'): Promise<Cart> {
     try {
+      const data: any = {};
+      if (entityType === 'room') {
+        data.roomId = entityId;
+      } else {
+        data.userId = entityId;
+      }
+      
       return this.prisma.cart.create({
-        data: { userId }
+        data
       });
     } catch (error) {
       throw error;
@@ -32,10 +39,17 @@ export class CartRepository implements ICartRepository {
     }
   }
 
-  async findByUser(userId: string): Promise<Cart & { CartItem: CartItem[] }> {
+  async findByEntity(entityId: string, entityType: 'human' | 'room'): Promise<Cart & { CartItem: CartItem[] }> {
     try {
+      const where: any = {};
+      if (entityType === 'room') {
+        where.roomId = entityId;
+      } else {
+        where.userId = entityId;
+      }
+
       return this.prisma.cart.findFirst({
-        where: { userId },
+        where,
         include: {
           CartItem: {
             include: { product: true }
@@ -45,6 +59,10 @@ export class CartRepository implements ICartRepository {
     } catch (error) {
       throw error;
     }
+  }
+
+  async findByUser(userId: string): Promise<Cart & { CartItem: CartItem[] }> {
+    return this.findByEntity(userId, 'human');
   }
 
   async addItem(cartId: string, productId: string, quantity: number, price: number): Promise<CartItem> {
