@@ -11,6 +11,9 @@ import { OrderProductModule } from './order-products/order-product.module';
 import { OrderModule } from './orders/order.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductModule } from './products/product.module';
+import { RoomBookingModule } from './room-bookings/room-booking.module';
+import { RoomSessionModule } from './room-sessions/room-session.module';
+import { RoomModule } from './rooms/room.module';
 import { ServiceTemplateModule } from './service-templates/service-template.module';
 import { ServicesModule } from './services/service.module';
 import { UsersModule } from './users/user.module';
@@ -19,6 +22,9 @@ import { UsersModule } from './users/user.module';
   imports: [
     AuthModule,
     UsersModule,
+    RoomModule,
+    RoomSessionModule,
+    RoomBookingModule,
     HotelModule,
     HotelDetailsModule,
     ServicesModule,

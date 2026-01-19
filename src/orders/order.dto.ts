@@ -1,11 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMinSize, IsArray, IsNumber, IsString, Min, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, IsNumber, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
 import { CreateOrderProductDto } from '../order-products/order-product.dto';
 
 export class CreateOrderDto {
-  @ApiProperty()
+  @ApiProperty({ required: false, description: 'User ID (for human users)' })
+  @IsOptional()
   @IsString()
-  userId: string;
+  userId?: string;
+
+  @ApiProperty({ required: false, description: 'Room ID (for room orders)' })
+  @IsOptional()
+  @IsString()
+  roomId?: string;
 
   @ApiProperty()
   @IsString()
@@ -40,7 +46,8 @@ export class UpdateOrderDto {
 
 export interface Order {
   id: string;
-  userId: string;
+  userId?: string;
+  roomId?: string;
   hotelId: string;
   status: string;
   hidden: boolean;

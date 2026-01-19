@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post, Put, Request, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { FastifyReply } from 'fastify';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AddCartItemDto, UpdateCartItemDto } from './cart.dto';
 import { ICartService } from './cart.interface';
@@ -14,33 +15,101 @@ export class CartController {
     private readonly cartService: ICartService
   ) {}
 
+  @Get('/me')
+  @ApiOperation({ summary: 'Get my cart', description: 'Retrieve the cart for authenticated user or room' })
+  @ApiResponse({ status: 200, description: 'Cart retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Cart not found' })
+  async getMyCart(@Request() req, @Res() reply: FastifyReply) {
+    try {
+      const entityId = req.user.userId;
+      const entityType = req.user.type; // 'human' or 'room'
+      
+      const cart = await this.cartService.getCartByEntity(entityId, entityType);
+      reply.send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: cart,
+      });
+    } catch (error) {
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
   @Get('/user/:userId')
-  @ApiOperation({ summary: 'Get user cart', description: 'Retrieve the cart for a specific user' })
+  @ApiOperation({ summary: 'Get user cart', description: 'Retrieve the cart for a specific user (admin only)' })
   @ApiParam({ name: 'userId', description: 'User ID to get cart for', type: 'string' })
   @ApiResponse({ status: 200, description: 'Cart retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Cart not found' })
-  async getCart(@Param('userId') userId: string) {
+  async getCart(@Param('userId') userId: string, @Res() reply: FastifyReply) {
     try {
-      return this.cartService.getCartByUser(userId);
+      const cart = await this.cartService.getCartByEntity(userId, 'human');
+      reply.send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: cart,
+      });
     } catch (error) {
-      throw error;
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
     }
   }
 
-  @Post('/item/:id')
-  @ApiOperation({ summary: 'Add item to cart', description: 'Add a product item to user cart' })
-  @ApiParam({ name: 'id', description: 'User ID to add item to cart', type: 'string' })
+  @Get('/room/:roomId')
+  @ApiOperation({ summary: 'Get room cart', description: 'Retrieve the cart for a specific room (admin only)' })
+  @ApiParam({ name: 'roomId', description: 'Room ID to get cart for', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Cart retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Cart not found' })
+  async getRoomCart(@Param('roomId') roomId: string, @Res() reply: FastifyReply) {
+    try {
+      const cart = await this.cartService.getCartByEntity(roomId, 'room');
+      reply.send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: cart,
+      });
+    } catch (error) {
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
+  @Post('/item')
+  @ApiOperation({ summary: 'Add item to my cart', description: 'Add a product item to authenticated user/room cart' })
   @ApiBody({ type: AddCartItemDto, description: 'Cart item details to add' })
   @ApiResponse({ status: 201, description: 'Item added to cart successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - invalid input data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Product or cart not found' })
-  async addItem(@Param('id') id: string, @Body() addCartItemDto: AddCartItemDto) {
+  async addItem(@Request() req, @Body() addCartItemDto: AddCartItemDto, @Res() reply: FastifyReply) {
     try {
-      return this.cartService.addItem(id, addCartItemDto.productId, addCartItemDto.quantity);
+      const entityId = req.user.userId;
+      const entityType = req.user.type;
+      
+      const result = await this.cartService.addItem(entityId, entityType, addCartItemDto.productId, addCartItemDto.quantity);
+      reply.code(201).send({
+        statusCode: 201,
+        statusMessage: 'Success',
+        data: result,
+      });
     } catch (error) {
-      throw error;
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
     }
   }
 
@@ -55,11 +124,21 @@ export class CartController {
   async updateItemQuantity(
     @Param('id') itemId: string,
     @Body() updateCartItemDto: UpdateCartItemDto,
+    @Res() reply: FastifyReply
   ) {
     try {
-      return this.cartService.updateItemQuantity(itemId, updateCartItemDto.quantity);
+      const result = await this.cartService.updateItemQuantity(itemId, updateCartItemDto.quantity);
+      reply.send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: result,
+      });
     } catch (error) {
-      throw error;
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
     }
   }
 
@@ -69,40 +148,71 @@ export class CartController {
   @ApiResponse({ status: 200, description: 'Item removed from cart successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Cart item not found' })
-  async removeItem(@Param('id') itemId: string) {
+  async removeItem(@Param('id') itemId: string, @Res() reply: FastifyReply) {
     try {
-      return this.cartService.removeItem(itemId);
+      const result = await this.cartService.removeItem(itemId);
+      reply.send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: result,
+      });
     } catch (error) {
-      throw error;
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
     }
   }
 
-  @Post('/checkout/:userId')
-  @ApiOperation({ summary: 'Checkout cart', description: 'Process checkout for user cart and create order' })
-  @ApiParam({ name: 'userId', description: 'User ID to checkout cart for', type: 'string' })
+  @Post('/checkout')
+  @ApiOperation({ summary: 'Checkout my cart', description: 'Process checkout for authenticated user/room cart and create order' })
   @ApiResponse({ status: 201, description: 'Checkout completed successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - cart is empty or invalid' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Cart not found' })
-  async checkout(@Param('userId') userId: string) {
+  async checkout(@Request() req, @Res() reply: FastifyReply) {
     try {
-      return this.cartService.checkout(userId);
+      const entityId = req.user.userId;
+      const entityType = req.user.type;
+      
+      const result = await this.cartService.checkout(entityId, entityType);
+      reply.code(201).send({
+        statusCode: 201,
+        statusMessage: 'Success',
+        data: result,
+      });
     } catch (error) {
-      throw error;
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
     }
   }
 
-  @Delete('/clear/:userId')
-  @ApiOperation({ summary: 'Clear cart', description: 'Remove all items from user cart' })
-  @ApiParam({ name: 'userId', description: 'User ID to clear cart for', type: 'string' })
+  @Delete('/clear')
+  @ApiOperation({ summary: 'Clear my cart', description: 'Remove all items from authenticated user/room cart' })
   @ApiResponse({ status: 200, description: 'Cart cleared successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Cart not found' })
-  async clearCart(@Param('userId') userId: string) {
+  async clearCart(@Request() req, @Res() reply: FastifyReply) {
     try {
-      return this.cartService.clearCart(userId);
+      const entityId = req.user.userId;
+      const entityType = req.user.type;
+      
+      const result = await this.cartService.clearCart(entityId, entityType);
+      reply.send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: result,
+      });
     } catch (error) {
-      throw error;
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
     }
   }
 }
