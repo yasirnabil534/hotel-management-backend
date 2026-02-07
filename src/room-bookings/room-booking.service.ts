@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { RoomBooking } from '@prisma/client';
 import { IRoomService } from '../rooms/room.interface';
 import { CreateRoomBookingDto, UpdateRoomBookingDto } from './room-booking.dto';
@@ -6,6 +6,8 @@ import { IRoomBookingRepository, IRoomBookingService } from './room-booking.inte
 
 @Injectable()
 export class RoomBookingService implements IRoomBookingService {
+  private readonly logger = new Logger(RoomBookingService.name);
+
   constructor(
     @Inject('IRoomBookingRepository')
     private roomBookingRepository: IRoomBookingRepository,
@@ -54,10 +56,10 @@ export class RoomBookingService implements IRoomBookingService {
         bookingData.createdBy = createdBy;
       }
 
-      const booking = await this.roomBookingRepository.create(bookingData);
-
       // Update room status to "booked"
-      await this.roomService.update(createRoomBookingDto.roomId, { status: 'booked' });
+      const updatedRoom = await this.roomService.update(createRoomBookingDto.roomId, { status: 'booked' });
+      
+      const booking = await this.roomBookingRepository.create(bookingData);
 
       return booking;
     } catch (error) {
@@ -197,13 +199,13 @@ export class RoomBookingService implements IRoomBookingService {
         throw new BadRequestException(`Booking is already "${booking.status}" and the room has been released`);
       }
 
+      // Update room status back to "available"
+      const updatedRoom = await this.roomService.update(booking.roomId, { status: 'available' });
+
       // Update booking status to "checked-out"
       const updatedBooking = await this.roomBookingRepository.update(bookingId, {
         status: 'checked-out',
       });
-
-      // Update room status back to "available"
-      await this.roomService.update(booking.roomId, { status: 'available' });
 
       return updatedBooking;
     } catch (error) {
