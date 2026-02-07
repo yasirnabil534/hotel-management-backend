@@ -1,5 +1,6 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { RoomBooking } from '@prisma/client';
+import { IRoomService } from '../rooms/room.interface';
 import { CreateRoomBookingDto, UpdateRoomBookingDto } from './room-booking.dto';
 import { IRoomBookingRepository, IRoomBookingService } from './room-booking.interface';
 
@@ -8,10 +9,21 @@ export class RoomBookingService implements IRoomBookingService {
   constructor(
     @Inject('IRoomBookingRepository')
     private roomBookingRepository: IRoomBookingRepository,
+    @Inject('IRoomService')
+    private roomService: IRoomService,
   ) {}
 
   async create(createRoomBookingDto: CreateRoomBookingDto, createdBy?: string): Promise<RoomBooking> {
     try {
+      // Check if the room exists and is available
+      const room = await this.roomService.findOne(createRoomBookingDto.roomId);
+      if (!room) {
+        throw new NotFoundException(`Room with ID ${createRoomBookingDto.roomId} not found`);
+      }
+      if (room.status !== 'available') {
+        throw new ConflictException(`Room is currently "${room.status}" and cannot be booked`);
+      }
+
       // Calculate subtotal, total, and balance
       const subtotal = createRoomBookingDto.roomPrice * createRoomBookingDto.numberOfNights;
       const discount = createRoomBookingDto.discount || 0;
@@ -42,7 +54,12 @@ export class RoomBookingService implements IRoomBookingService {
         bookingData.createdBy = createdBy;
       }
 
-      return await this.roomBookingRepository.create(bookingData);
+      const booking = await this.roomBookingRepository.create(bookingData);
+
+      // Update room status to "booked"
+      await this.roomService.update(createRoomBookingDto.roomId, { status: 'booked' });
+
+      return booking;
     } catch (error) {
       console.error('Error creating room booking:', error);
       throw error;
@@ -168,6 +185,29 @@ export class RoomBookingService implements IRoomBookingService {
       });
     } catch (error) {
       console.error(`Error adding payment to booking ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async releaseRoom(bookingId: string): Promise<RoomBooking> {
+    try {
+      const booking = await this.findOne(bookingId);
+
+      if (booking.status === 'checked-out' || booking.status === 'cancelled') {
+        throw new BadRequestException(`Booking is already "${booking.status}" and the room has been released`);
+      }
+
+      // Update booking status to "checked-out"
+      const updatedBooking = await this.roomBookingRepository.update(bookingId, {
+        status: 'checked-out',
+      });
+
+      // Update room status back to "available"
+      await this.roomService.update(booking.roomId, { status: 'available' });
+
+      return updatedBooking;
+    } catch (error) {
+      console.error(`Error releasing room for booking ${bookingId}:`, error);
       throw error;
     }
   }
