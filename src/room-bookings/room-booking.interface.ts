@@ -20,5 +20,6 @@ export interface IRoomBookingService {
   update(id: string, updateRoomBookingDto: UpdateRoomBookingDto): Promise<RoomBooking>;
   remove(id: string): Promise<void>;
   addPayment(id: string, amount: number): Promise<RoomBooking>;
+  releaseRoom(bookingId: string): Promise<RoomBooking>;
   calculateBalance(booking: RoomBooking): number;
 }

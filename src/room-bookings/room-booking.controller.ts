@@ -240,6 +240,36 @@ export class RoomBookingController {
     }
   }
 
+  @ApiOperation({ summary: 'Release a booked room (set room status back to available)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Room released successfully',
+    type: RoomBookingEntity,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/release')
+  async releaseRoom(
+    @Param('id') id: string,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    try {
+      const booking = await this.roomBookingService.releaseRoom(id);
+      reply.send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: booking,
+      });
+    } catch (error) {
+      this.logger.error(`Error releasing room: ${error.message}`, error.stack);
+      const statusCode = error.status || 500;
+      reply.code(statusCode).send({
+        statusCode,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
   @ApiOperation({ summary: 'Delete a room booking' })
   @ApiResponse({
     status: 200,
