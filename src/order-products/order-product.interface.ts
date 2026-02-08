@@ -12,7 +12,7 @@ export interface OrderProduct {
 
 export interface IOrderProductRepository {
   create(createOrderProductDto: CreateOrderProductDto): Promise<OrderProduct>;
-  findAll(): Promise<OrderProduct[]>;
+  findAll(query?: Record<string, any>): Promise<OrderProduct[]>;
   findOne(id: string): Promise<OrderProduct | null>;
   update(id: string, updateOrderProductDto: UpdateOrderProductDto): Promise<OrderProduct>;
   remove(id: string): Promise<OrderProduct>;
@@ -21,7 +21,7 @@ export interface IOrderProductRepository {
 
 export interface IOrderProductService {
   create(createOrderProductDto: CreateOrderProductDto): Promise<OrderProduct>;
-  findAll(): Promise<OrderProduct[]>;
+  findAll(query?: Record<string, any>): Promise<OrderProduct[]>;
   findOne(id: string): Promise<OrderProduct>;
   update(id: string, updateOrderProductDto: UpdateOrderProductDto): Promise<OrderProduct>;
   remove(id: string): Promise<OrderProduct>;

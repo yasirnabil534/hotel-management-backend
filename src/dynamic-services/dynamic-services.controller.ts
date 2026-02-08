@@ -65,7 +65,13 @@ export class DynamicServicesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all system services' })
+  @ApiOperation({ summary: 'Get all system services', description: 'Filterable by: hotelId, search' })
+  @ApiQuery({
+    name: 'hotelId',
+    required: false,
+    type: String,
+    description: 'Filter by hotel ID',
+  })
   @ApiQuery({
     name: 'page',
     required: false,

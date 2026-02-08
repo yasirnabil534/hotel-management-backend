@@ -236,7 +236,13 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all users' })
+  @ApiOperation({ summary: 'Get all users', description: 'Filterable by: hotelId, search' })
+  @ApiQuery({
+    name: 'hotelId',
+    required: false,
+    type: String,
+    description: 'Filter by hotel ID',
+  })
   @ApiQuery({
     name: 'page',
     required: false,

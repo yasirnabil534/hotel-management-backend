@@ -15,7 +15,7 @@ export class ServiceRepository implements IServiceRepository {
   }
 
   async findAll(query: Record<string, any>): Promise<Service[]> {
-    const { page, limit, sortBy, sortOrder, search, ...filters } = query;
+    const { page, limit, sortBy, sortOrder, search, hotelId, ...filters } = query;
     const skip = page
       ? (parseInt(page || '1') - 1) * parseInt(limit || '10')
       : 1;
@@ -28,6 +28,12 @@ export class ServiceRepository implements IServiceRepository {
       };
     }
     let allFilters = { ...filters };
+
+    // Filter by hotelId
+    if (hotelId) {
+      allFilters.hotelId = hotelId;
+    }
+
     if (search) {
       allFilters = {
         ...allFilters,
