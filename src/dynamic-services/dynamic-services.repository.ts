@@ -38,7 +38,7 @@ export class DynamicServicesRepository implements ISystemServiceRepository {
 
   async findAll(query?: Record<string, any>): Promise<SystemService[]> {
     try {
-      const { page, limit, sortBy, sortOrder, search, ...filters } = query || {};
+      const { page, limit, sortBy, sortOrder, search, hotelId, ...filters } = query || {};
       const skip = page ? (parseInt(page) - 1) * parseInt(limit || '10') : 0;
       const take = limit ? parseInt(limit) : 10;
 
@@ -50,6 +50,12 @@ export class DynamicServicesRepository implements ISystemServiceRepository {
       }
 
       let allFilters = { ...filters };
+
+      // Filter by hotelId
+      if (hotelId) {
+        allFilters.hotelId = hotelId;
+      }
+
       if (search) {
         allFilters = {
           ...allFilters,

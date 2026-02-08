@@ -36,11 +36,15 @@ export class QueryProcessorInterceptor implements NestInterceptor {
           delete query.category;
         }
 
-        if (!Number.isNaN(Number(query[item]))) {
-          query[item] = Number(query[item]);
+        // Convert numeric strings to numbers, but skip ObjectId fields (ending with "Id")
+        // and only convert numbers under 9 digits to avoid corrupting large IDs
+        const numValue = Number(query[item]);
+        if (!item.endsWith('Id') && !Number.isNaN(numValue) && String(query[item]).length < 10) {
+          query[item] = numValue;
         }
       });
       request.query = query;
+      (request as any).processedQuery = query;
     }
 
     return next.handle();

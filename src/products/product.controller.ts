@@ -61,6 +61,13 @@ export class ProductController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all products', description: 'Filterable by: hotelId, search' })
+  @ApiQuery({
+    name: 'hotelId',
+    required: false,
+    type: String,
+    description: 'Filter by hotel ID',
+  })
   @ApiQuery({
     name: 'page',
     required: false,

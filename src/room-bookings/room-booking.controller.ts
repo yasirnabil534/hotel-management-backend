@@ -13,7 +13,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply } from 'fastify';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
@@ -71,6 +71,21 @@ export class RoomBookingController {
     summary: 'Get all room bookings',
     description: 'Filterable by: roomId, userId, hotelId, status, phone, email, checkInFrom, checkInTo, checkOutFrom, checkOutTo'
   })
+  @ApiQuery({ name: 'hotelId', required: false, type: String, description: 'Filter by hotel ID (ObjectId)' })
+  @ApiQuery({ name: 'roomId', required: false, type: String, description: 'Filter by room ID (ObjectId)' })
+  @ApiQuery({ name: 'userId', required: false, type: String, description: 'Filter by user ID (ObjectId)' })
+  @ApiQuery({ name: 'status', required: false, type: String, description: 'Filter by booking status (pending, confirmed, checked-in, checked-out, cancelled)' })
+  @ApiQuery({ name: 'phone', required: false, type: String, description: 'Filter by guest phone number' })
+  @ApiQuery({ name: 'email', required: false, type: String, description: 'Filter by guest email' })
+  @ApiQuery({ name: 'checkInFrom', required: false, type: String, description: 'Filter check-in date from (ISO date)' })
+  @ApiQuery({ name: 'checkInTo', required: false, type: String, description: 'Filter check-in date to (ISO date)' })
+  @ApiQuery({ name: 'checkOutFrom', required: false, type: String, description: 'Filter check-out date from (ISO date)' })
+  @ApiQuery({ name: 'checkOutTo', required: false, type: String, description: 'Filter check-out date to (ISO date)' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search by guest name, email, or phone' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number for pagination' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'sortBy', required: false, type: String, description: 'Field to sort by' })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
   @ApiResponse({
     status: 200,
     description: 'Returns all room bookings',

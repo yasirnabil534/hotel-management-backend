@@ -61,7 +61,13 @@ export class CategoryController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all categories' })
+  @ApiOperation({ summary: 'Get all categories', description: 'Filterable by: hotelId, search' })
+  @ApiQuery({
+    name: 'hotelId',
+    required: false,
+    type: String,
+    description: 'Filter by hotel ID',
+  })
   @ApiQuery({
     name: 'page',
     required: false,

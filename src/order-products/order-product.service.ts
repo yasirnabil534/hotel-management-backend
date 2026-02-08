@@ -22,9 +22,9 @@ export class OrderProductService implements IOrderProductService {
     }
   }
 
-  async findAll(): Promise<OrderProduct[]> {
+  async findAll(query?: Record<string, any>): Promise<OrderProduct[]> {
     try {
-      return this.orderProductRepository.findAll();
+      return this.orderProductRepository.findAll(query || {});
     } catch (error) {
       throw error;
     }
