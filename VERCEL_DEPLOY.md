@@ -13,11 +13,13 @@ npm install
 1. Push your code to GitHub/GitLab/Bitbucket
 2. Go to [vercel.com/new](https://vercel.com/new)
 3. Import your repository
-4. Add environment variables:
+4. **Important**: In the project settings, set the production branch to `vercel-deploy`
+   - Go to Settings → Git → Production Branch → Change to `vercel-deploy`
+5. Add environment variables:
    - `DATABASE_URL` - Your MongoDB connection string
    - `JWT_SECRET` - Your JWT secret
    - `ENCRYPTION_KEY` - Your encryption key
-5. Click Deploy!
+6. Click Deploy!
 
 #### Via CLI
 ```bash
@@ -26,6 +28,9 @@ npm i -g vercel
 
 # Login
 vercel login
+
+# Make sure you're on the vercel-deploy branch
+git checkout vercel-deploy
 
 # Deploy
 vercel --prod
@@ -56,6 +61,22 @@ In MongoDB Atlas:
 ✅ Updated `tsconfig.json` - Include api folder
 ✅ Updated Prisma schema - Added binary targets for Vercel
 ✅ Added Express adapter - Required for Vercel serverless
+
+## 🌿 Branch Strategy
+
+This project uses a separate `vercel-deploy` branch for production deployments:
+- `developer` - Default development branch
+- `vercel-deploy` - Production deployment branch (deployed to Vercel)
+
+**To update production:**
+```bash
+# Merge your changes from developer to vercel-deploy
+git checkout vercel-deploy
+git merge developer
+git push origin vercel-deploy
+
+# Vercel will automatically redeploy
+```
 
 ## 🔄 Local Development
 
