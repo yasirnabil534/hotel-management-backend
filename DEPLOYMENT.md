@@ -37,14 +37,20 @@ You need to add these environment variables in your Vercel project settings:
 #### Option A: Deploy via Vercel Dashboard (Recommended for first deployment)
 1. Go to https://vercel.com/new
 2. Import your Git repository
-3. Vercel will automatically detect the configuration
-4. Add your environment variables
-5. Click "Deploy"
+3. **Important**: Configure the production branch
+   - After importing, go to Settings → Git
+   - Change Production Branch to `vercel-deploy`
+4. Vercel will automatically detect the configuration
+5. Add your environment variables
+6. Click "Deploy"
 
 #### Option B: Deploy via CLI
 ```bash
 # Login to Vercel
 vercel login
+
+# Switch to vercel-deploy branch
+git checkout vercel-deploy
 
 # Deploy to production
 vercel --prod
