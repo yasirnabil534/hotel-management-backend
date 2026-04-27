@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '../src/app.module';
-import * as express from 'express';
+import express from 'express';
 
 const binaryMimeTypes: string[] = [];
 
