@@ -26,7 +26,14 @@ async function bootstrapServer() {
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
+    
+    // Setup Swagger with custom options for serverless
+    SwaggerModule.setup('api', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+      customSiteTitle: 'Hotel Management API Docs',
+    });
 
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
