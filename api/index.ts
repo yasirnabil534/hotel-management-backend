@@ -27,12 +27,24 @@ async function bootstrapServer() {
 
     const document = SwaggerModule.createDocument(app, config);
     
-    // Setup Swagger with custom options for serverless
+    // Setup Swagger with CDN-based assets (works better with serverless)
     SwaggerModule.setup('api', app, document, {
       swaggerOptions: {
         persistAuthorization: true,
+        docExpansion: 'list',
+        filter: true,
+        showRequestDuration: true,
       },
       customSiteTitle: 'Hotel Management API Docs',
+      customfavIcon: 'https://nestjs.com/img/logo-small.svg',
+      customCss: '.swagger-ui .topbar { display: none }',
+      customCssUrl: [
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css',
+      ],
+      customJs: [
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-standalone-preset.js',
+      ],
     });
 
     await app.init();
