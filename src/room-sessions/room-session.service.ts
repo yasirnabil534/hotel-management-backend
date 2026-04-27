@@ -96,11 +96,18 @@ export class RoomSessionService implements IRoomSessionService {
       }
 
       // Start the session
-      return await this.roomSessionRepository.update(sessionId, {
+      const updatedSession = await this.roomSessionRepository.update(sessionId, {
         status: 'active',
         acceptedBy: adminId,
         startedAt: new Date(),
       });
+
+      // Set room status to booked when session starts
+      await this.roomService.update(session.roomId, {
+        status: 'booked',
+      });
+
+      return updatedSession;
     } catch (error) {
       console.error(`Error starting session with id ${sessionId}:`, error);
       throw error;
@@ -152,11 +159,18 @@ export class RoomSessionService implements IRoomSessionService {
         throw new BadRequestException(`Session is already ended`);
       }
 
-      return await this.roomSessionRepository.update(sessionId, {
+      const updatedSession = await this.roomSessionRepository.update(sessionId, {
         status: 'ended',
         endedAt: new Date(),
         endedBy: adminId,
       });
+
+      // Set room status to available when session ends
+      await this.roomService.update(session.roomId, {
+        status: 'available',
+      });
+
+      return updatedSession;
     } catch (error) {
       console.error(`Error ending session with id ${sessionId}:`, error);
       throw error;

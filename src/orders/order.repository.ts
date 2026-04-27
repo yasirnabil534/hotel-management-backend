@@ -29,8 +29,30 @@ export class OrderRepository implements IOrderRepository {
         return prisma.order.findUnique({
           where: { id: order.id },
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                type: true,
+                hotelId: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
             hotel: true,
+            room: {
+              select: {
+                id: true,
+                roomCode: true,
+                name: true,
+                category: true,
+                status: true,
+                hotelId: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
             OrderProduct: {
               include: {
                 product: true,
@@ -92,8 +114,30 @@ export class OrderRepository implements IOrderRepository {
         take,
         orderBy,
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              type: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           hotel: true,
+          room: {
+            select: {
+              id: true,
+              roomCode: true,
+              name: true,
+              category: true,
+              status: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           OrderProduct: {
             include: {
               product: {
@@ -120,8 +164,30 @@ export class OrderRepository implements IOrderRepository {
           hidden: false
         },
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              type: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           hotel: true,
+          room: {
+            select: {
+              id: true,
+              roomCode: true,
+              name: true,
+              category: true,
+              status: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           OrderProduct: {
             include: {
               product: {
@@ -148,8 +214,30 @@ export class OrderRepository implements IOrderRepository {
           hidden: false
         },
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              type: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           hotel: true,
+          room: {
+            select: {
+              id: true,
+              roomCode: true,
+              name: true,
+              category: true,
+              status: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           OrderProduct: {
             include: {
               product: {
@@ -176,8 +264,30 @@ export class OrderRepository implements IOrderRepository {
           hidden: false
         },
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              type: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           hotel: true,
+          room: {
+            select: {
+              id: true,
+              roomCode: true,
+              name: true,
+              category: true,
+              status: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           OrderProduct: {
             include: {
               product: {
@@ -205,8 +315,30 @@ export class OrderRepository implements IOrderRepository {
           hidden: false
         },
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              type: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           hotel: true,
+          room: {
+            select: {
+              id: true,
+              roomCode: true,
+              name: true,
+              category: true,
+              status: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           OrderProduct: {
             include: {
               product: {
@@ -231,8 +363,30 @@ export class OrderRepository implements IOrderRepository {
         where: { id },
         data: updateOrderDto,
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              type: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           hotel: true,
+          room: {
+            select: {
+              id: true,
+              roomCode: true,
+              name: true,
+              category: true,
+              status: true,
+              hotelId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           OrderProduct: {
             include: {
               product: {
