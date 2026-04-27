@@ -4,16 +4,18 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import type { Request, Response } from 'express';
-import express, { Express } from 'express';
+import express from 'express';
 
-const server: Express = express();
-let app: INestApplication;
+const expressApp = express();
+let isAppInitialized = false;
 
-async function bootstrap() {
-  if (!app) {
-    app = await NestFactory.create(
+async function initializeApp() {
+  if (!isAppInitialized) {
+    const adapter = new ExpressAdapter(expressApp);
+    const app: INestApplication = await NestFactory.create(
       AppModule,
-      new ExpressAdapter(server),
+      adapter,
+      { logger: ['error', 'warn', 'log'] }
     );
 
     app.enableCors({
@@ -33,11 +35,11 @@ async function bootstrap() {
     SwaggerModule.setup('api', app, document);
 
     await app.init();
+    isAppInitialized = true;
   }
-  return server;
 }
 
 export default async (req: Request, res: Response) => {
-  await bootstrap();
-  server(req, res);
+  await initializeApp();
+  expressApp(req, res);
 };
