@@ -1,23 +1,18 @@
 import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '../src/app.module';
-import type { NestExpressApplication } from '@nestjs/platform-express';
 
-let cachedApp: NestExpressApplication;
+let cachedApp: NestFastifyApplication;
 
 async function bootstrapServer() {
   if (!cachedApp) {
-    const app = await NestFactory.create<NestExpressApplication>(
+    const app = await NestFactory.create<NestFastifyApplication>(
       AppModule,
-      new ExpressAdapter(),
-      { 
-        logger: ['error', 'warn', 'log'],
-        rawBody: true
-      }
+      new FastifyAdapter({ logger: false })
     );
 
-    app.enableCors({
+    await app.enableCors({
       origin: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       credentials: true,
@@ -34,6 +29,7 @@ async function bootstrapServer() {
     SwaggerModule.setup('api', app, document);
 
     await app.init();
+    await app.getHttpAdapter().getInstance().ready();
     
     cachedApp = app;
   }
@@ -44,9 +40,9 @@ async function bootstrapServer() {
 export default async function handler(req, res) {
   try {
     const app = await bootstrapServer();
-    return app.getHttpAdapter().getInstance()(req, res);
+    await app.getHttpAdapter().getInstance().routing(req, res);
   } catch (error) {
     console.error('Handler error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message, stack: error.stack });
   }
 }
