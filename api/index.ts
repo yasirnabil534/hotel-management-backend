@@ -27,7 +27,6 @@ async function bootstrapServer() {
 
     const document = SwaggerModule.createDocument(app, config);
     
-    // Setup Swagger with CDN-based assets (works better with serverless)
     SwaggerModule.setup('api', app, document, {
       swaggerOptions: {
         persistAuthorization: true,
