@@ -13,7 +13,8 @@ async function bootstrapServer() {
       new ExpressAdapter(),
       { 
         logger: ['error', 'warn', 'log'],
-        abortOnError: false 
+        abortOnError: false,
+        bodyParser: false
       }
     );
 
@@ -22,6 +23,9 @@ async function bootstrapServer() {
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       credentials: true,
     });
+    
+    app.useBodyParser('json', { limit: '10mb' });
+    app.useBodyParser('urlencoded', { extended: true, limit: '10mb' });
 
     const config = new DocumentBuilder()
       .setTitle('Hotel Management API')
