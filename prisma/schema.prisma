@@ -138,7 +138,7 @@ model Order {
   userId    String?  @db.ObjectId
   roomId    String?  @db.ObjectId
   hotelId   String   @db.ObjectId
-  status    String   // e.g., 'pending', 'completed', 'cancelled'
+  status    String   // pending, received, in_progress, done
   hidden    Boolean  @default(false)
   total     Float
   createdAt DateTime @default(now())

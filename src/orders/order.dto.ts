@@ -1,6 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMinSize, IsArray, IsNumber, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { CreateOrderProductDto } from '../order-products/order-product.dto';
+import { ORDER_STATUS_FLOW, OrderStatus } from './order-status.enum';
 
 export class CreateOrderDto {
   @ApiProperty({ required: false, description: 'User ID (for human users)' })
@@ -23,25 +33,42 @@ export class CreateOrderDto {
   @ArrayMinSize(1)
   orderProducts: Omit<CreateOrderProductDto, 'orderId'>[];
 
-  @ApiProperty()
-  @IsString()
-  status: string = 'pending';
+  @ApiProperty({
+    required: false,
+    enum: ORDER_STATUS_FLOW,
+    default: OrderStatus.PENDING,
+  })
+  @IsOptional()
+  @IsEnum(OrderStatus)
+  status?: OrderStatus = OrderStatus.PENDING;
 
-  @ApiProperty()
-  @IsNumber()
-  @Min(0)
-  total: number;
-}
-
-export class UpdateOrderDto {
-  @ApiProperty({ required: false })
-  @IsString()
-  status?: string;
-
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    required: false,
+    description: 'Calculated from order products when an order is created',
+  })
+  @IsOptional()
   @IsNumber()
   @Min(0)
   total?: number;
+}
+
+export class UpdateOrderDto {
+  @ApiProperty({ required: false, enum: ORDER_STATUS_FLOW })
+  @IsOptional()
+  @IsEnum(OrderStatus)
+  status?: OrderStatus;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  total?: number;
+}
+
+export class UpdateOrderStatusDto {
+  @ApiProperty({ enum: ORDER_STATUS_FLOW })
+  @IsEnum(OrderStatus)
+  status: OrderStatus;
 }
 
 export interface User {
@@ -70,7 +97,7 @@ export interface Room {
   roomCode: string;
   name: string;
   category?: string;
-  status: string;
+  status: OrderStatus | string;
   hotelId?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -98,7 +125,7 @@ export interface Order {
   userId?: string;
   roomId?: string;
   hotelId: string;
-  status: string;
+  status: OrderStatus | string;
   hidden: boolean;
   total: number;
   createdAt: Date;
