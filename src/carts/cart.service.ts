@@ -1,5 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Cart, CartItem } from '@prisma/client';
+import { OrderStatus } from '../orders/order-status.enum';
 import { IOrderService } from '../orders/order.interface';
 import { ICartRepository, ICartService } from './cart.interface';
 
@@ -9,12 +10,18 @@ export class CartService implements ICartService {
     @Inject('ICartRepository')
     private readonly cartRepository: ICartRepository,
     @Inject('IOrderService')
-    private readonly orderService: IOrderService
+    private readonly orderService: IOrderService,
   ) {}
 
-  async getCartByEntity(entityId: string, entityType: 'human' | 'room'): Promise<Cart & { CartItem: CartItem[] }> {
+  async getCartByEntity(
+    entityId: string,
+    entityType: 'human' | 'room',
+  ): Promise<Cart & { CartItem: CartItem[] }> {
     try {
-      let cart: any = await this.cartRepository.findByEntity(entityId, entityType);
+      let cart: any = await this.cartRepository.findByEntity(
+        entityId,
+        entityType,
+      );
       if (!cart) {
         cart = await this.cartRepository.create(entityId, entityType);
       }
@@ -24,7 +31,9 @@ export class CartService implements ICartService {
     }
   }
 
-  async getCartByUser(userId: string): Promise<Cart & { CartItem: CartItem[] }> {
+  async getCartByUser(
+    userId: string,
+  ): Promise<Cart & { CartItem: CartItem[] }> {
     return this.getCartByEntity(userId, 'human');
   }
 
@@ -40,13 +49,23 @@ export class CartService implements ICartService {
     }
   }
 
-  async addItem(entityId: string, entityType: 'human' | 'room', productId: string, quantity: number): Promise<CartItem> {
+  async addItem(
+    entityId: string,
+    entityType: 'human' | 'room',
+    productId: string,
+    quantity: number,
+  ): Promise<CartItem> {
     try {
       const cart = await this.getCartByEntity(entityId, entityType);
-      const existingItem = cart.CartItem.find(item => item.productId === productId);
+      const existingItem = cart.CartItem.find(
+        item => item.productId === productId,
+      );
 
       if (existingItem) {
-        return this.updateItemQuantity(existingItem.id, existingItem.quantity + quantity);
+        return this.updateItemQuantity(
+          existingItem.id,
+          existingItem.quantity + quantity,
+        );
       }
 
       // Get product price from product service or repository
@@ -57,7 +76,10 @@ export class CartService implements ICartService {
     }
   }
 
-  async updateItemQuantity(itemId: string, quantity: number): Promise<CartItem> {
+  async updateItemQuantity(
+    itemId: string,
+    quantity: number,
+  ): Promise<CartItem> {
     try {
       if (quantity === 0) {
         return this.removeItem(itemId);
@@ -77,7 +99,10 @@ export class CartService implements ICartService {
     }
   }
 
-  async clearCart(entityId: string, entityType: 'human' | 'room'): Promise<Cart> {
+  async clearCart(
+    entityId: string,
+    entityType: 'human' | 'room',
+  ): Promise<Cart> {
     try {
       const cart = await this.getCartByEntity(entityId, entityType);
       return this.cartRepository.clear(cart.id);
@@ -89,7 +114,7 @@ export class CartService implements ICartService {
   async checkout(entityId: string, entityType: 'human' | 'room'): Promise<any> {
     try {
       const cart = await this.getCartByEntity(entityId, entityType);
-      
+
       if (cart.CartItem.length === 0) {
         throw new Error('Cart is empty');
       }
@@ -100,10 +125,13 @@ export class CartService implements ICartService {
         orderProducts: cart.CartItem.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
         })),
-        status: 'pending',
-        total: cart.CartItem.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        status: OrderStatus.PENDING,
+        total: cart.CartItem.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        ),
       };
 
       // Set userId or roomId based on entity type
