@@ -14,20 +14,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // Handle both human and room types
+    // Room = customer side
     if (payload.type === 'room') {
-      return { 
-        userId: payload.sub, 
-        roomCode: payload.roomCode, 
-        type: 'room' 
+      return {
+        userId: payload.sub,
+        roomCode: payload.roomCode,
+        type: 'room',
+        role: 'room',
       };
     }
-    
-    // Default to human type
-    return { 
-      userId: payload.sub, 
-      email: payload.email, 
-      type: 'human' 
+
+    // Human = admin side (super-admin, admin, hotel-management, hotel-staff)
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      type: 'human',
+      role: payload.role,
     };
   }
 }

@@ -107,14 +107,27 @@ Response:
 ```
 
 **Order List Filtering**
-Existing order list now supports status filtering:
+Existing order list now supports standard status filtering:
 
 ```http
 GET /orders?status=pending
 GET /orders?status=received
 GET /orders?status=in_progress
 GET /orders?status=done
+GET /orders?status=cancelled
 ```
+
+It also supports advanced virtual status filters for the admin table:
+
+```http
+GET /orders?status=active
+GET /orders?status=canceled_by_admin
+GET /orders?status=canceled_by_customer
+```
+
+- `active`: Returns orders that are `pending`, `received`, or `in_progress` (excludes `done` and `cancelled`).
+- `canceled_by_admin`: Returns orders cancelled by an admin user.
+- `canceled_by_customer`: Returns orders cancelled by the room (customer).
 
 It also supports room filtering:
 
@@ -200,11 +213,74 @@ So frontend should:
 - Show a friendly error if order creation fails because a product is unavailable.
 - Refresh products/cart if this error appears.
 
+***Pending Implementation***
+
+**Order Cancellation**
+Both admin and room (customer) can cancel an order before it reaches `done` status:
+
+```http
+PATCH /orders/:id/cancel
+Authorization: Bearer <token>
+```
+
+No request body needed. Backend validates the order is in a cancellable state (`pending`, `received`, or `in_progress`). Orders with `done` or `cancelled` status will return `400`.
+
+Allowed status values (updated):
+
+```ts
+"pending" | "received" | "in_progress" | "done" | "cancelled"
+```
+
+**Real-time Order Updates (WebSocket)**
+Backend now pushes real-time order updates via Socket.IO. When admin changes a status or anyone cancels an order, all connected clients for that hotel receive the update instantly.
+
+**Connection Setup:**
+
+```ts
+import { io } from 'socket.io-client';
+
+const socket = io('http://<backend-host>:<port>/orders');
+
+// Join a hotel room to receive its order events
+socket.emit('join-hotel', { hotelId: 'REAL_HOTEL_ID' });
+```
+
+**Events to listen for:**
+
+| Event | When | Payload |
+|---|---|---|
+| `order:status-updated` | Admin changes order status | Full order object |
+| `order:cancelled` | Admin or room cancels order | Full order object |
+
+**Frontend integration example:**
+
+```ts
+// Listen for status updates
+socket.on('order:status-updated', (order) => {
+  // Update the order in your local state / tracking UI
+  console.log(`Order ${order.id} status changed to: ${order.status}`);
+});
+
+// Listen for cancellations
+socket.on('order:cancelled', (order) => {
+  // Update UI to show cancelled state
+  console.log(`Order ${order.id} was cancelled`);
+});
+
+// Leave hotel room when navigating away
+socket.emit('leave-hotel', { hotelId: 'REAL_HOTEL_ID' });
+```
+
 **Frontend Summary**
 Add or update:
 - Customer order tracking screen.
 - Room/customer order history tracking UI.
 - Admin order tracking table/list.
 - Admin status dropdown/actions.
+- Cancel button on both admin and room (customer) side.
 - Use `PATCH /orders/:id/status` when admin changes status.
+- Use `PATCH /orders/:id/cancel` when admin or room cancels.
 - Use `GET /orders/tracking/statuses` instead of hardcoding labels if possible.
+- Connect to WebSocket namespace `/orders` for real-time updates.
+- Join the hotel room via `join-hotel` event on connect.
+- Listen for `order:status-updated` and `order:cancelled` events.

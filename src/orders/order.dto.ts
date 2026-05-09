@@ -10,7 +10,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CreateOrderProductDto } from '../order-products/order-product.dto';
-import { ORDER_STATUS_FLOW, OrderStatus } from './order-status.enum';
+import {
+  ALL_ORDER_STATUSES,
+  ORDER_STATUS_FLOW,
+  OrderStatus,
+} from './order-status.enum';
 
 export class CreateOrderDto {
   @ApiProperty({ required: false, description: 'User ID (for human users)' })
@@ -53,7 +57,7 @@ export class CreateOrderDto {
 }
 
 export class UpdateOrderDto {
-  @ApiProperty({ required: false, enum: ORDER_STATUS_FLOW })
+  @ApiProperty({ required: false, enum: ALL_ORDER_STATUSES })
   @IsOptional()
   @IsEnum(OrderStatus)
   status?: OrderStatus;
@@ -66,7 +70,7 @@ export class UpdateOrderDto {
 }
 
 export class UpdateOrderStatusDto {
-  @ApiProperty({ enum: ORDER_STATUS_FLOW })
+  @ApiProperty({ enum: ALL_ORDER_STATUSES })
   @IsEnum(OrderStatus)
   status: OrderStatus;
 }

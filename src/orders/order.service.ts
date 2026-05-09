@@ -5,10 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateOrderDto, Order, UpdateOrderDto } from './order.dto';
+import { OrderGateway } from './order.gateway';
 import { IOrderRepository, IOrderService } from './order.interface';
 import {
+  ALL_ORDER_STATUSES,
+  CANCELLABLE_STATUSES,
   normalizeOrderStatus,
-  ORDER_STATUS_FLOW,
   OrderStatus,
 } from './order-status.enum';
 
@@ -17,6 +19,7 @@ export class OrderService implements IOrderService {
   constructor(
     @Inject('IOrderRepository')
     private readonly orderRepository: IOrderRepository,
+    private readonly orderGateway: OrderGateway,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
@@ -121,10 +124,41 @@ export class OrderService implements IOrderService {
         throw new BadRequestException('Order status is required');
       }
 
-      return await this.orderRepository.updateStatus(
+      const order = await this.orderRepository.updateStatus(
         id,
         this.resolveStatus(status),
       );
+
+      this.orderGateway.emitOrderStatusUpdate(order);
+      return order;
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+      throw error;
+    }
+  }
+
+  async cancelOrder(id: string, cancelledBy: string): Promise<Order> {
+    try {
+      const existingOrder = await this.orderRepository.findOne(id);
+      if (!existingOrder) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+
+      if (!CANCELLABLE_STATUSES.includes(existingOrder.status as OrderStatus)) {
+        throw new BadRequestException(
+          `Order cannot be cancelled. Only orders with status ${CANCELLABLE_STATUSES.join(', ')} can be cancelled.`,
+        );
+      }
+
+      const cancelledOrder = await this.orderRepository.cancelOrder(
+        id,
+        cancelledBy,
+      );
+
+      this.orderGateway.emitOrderCancelled(cancelledOrder);
+      return cancelledOrder;
     } catch (error) {
       if (error.code === 'P2025') {
         throw new NotFoundException(`Order with ID ${id} not found`);
@@ -152,10 +186,11 @@ export class OrderService implements IOrderService {
     const normalizedStatus = normalizeOrderStatus(status);
     if (!normalizedStatus) {
       throw new BadRequestException(
-        `Invalid order status. Allowed statuses: ${ORDER_STATUS_FLOW.join(', ')}`,
+        `Invalid order status. Allowed statuses: ${ALL_ORDER_STATUSES.join(', ')}`,
       );
     }
 
     return normalizedStatus;
   }
 }
+

@@ -11,6 +11,7 @@ export interface IOrderRepository {
   findByHotelAndUser(hotelId: string, userId: string): Promise<Order[]>;
   update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order>;
   updateStatus(id: string, status: OrderStatus): Promise<Order>;
+  cancelOrder(id: string, cancelledBy: string): Promise<Order>;
   remove(id: string): Promise<void>;
 }
 
@@ -24,5 +25,6 @@ export interface IOrderService {
   findByHotelAndUser(hotelId: string, userId: string): Promise<Order[]>;
   update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order>;
   updateStatus(id: string, status: OrderStatus): Promise<Order>;
+  cancelOrder(id: string, cancelledBy: string): Promise<Order>;
   remove(id: string): Promise<void>;
 }

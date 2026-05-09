@@ -18,6 +18,8 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply } from 'fastify';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
 import {
   CreateOrderDto,
@@ -25,7 +27,13 @@ import {
   UpdateOrderStatusDto,
 } from './order.dto';
 import { IOrderService } from './order.interface';
-import { ORDER_STATUS_FLOW, ORDER_STATUS_OPTIONS } from './order-status.enum';
+import {
+  ALL_ORDER_STATUSES,
+  ORDER_STATUS_FLOW,
+  ORDER_STATUS_OPTIONS,
+} from './order-status.enum';
+
+const ADMIN_ROLES = ['super-admin', 'admin', 'hotel-management', 'hotel-staff'];
 
 @ApiTags('Orders API')
 @Controller('/orders')
@@ -192,8 +200,8 @@ export class OrderController {
   @ApiQuery({
     name: 'status',
     required: false,
-    enum: ORDER_STATUS_FLOW,
-    description: 'Filter orders by tracking status',
+    type: String,
+    description: 'Filter orders by tracking status. Can be one of ALL_ORDER_STATUSES, or "active" (pending, received, in_progress), "canceled_by_admin", "canceled_by_customer".',
   })
   @UseInterceptors(QueryProcessorInterceptor)
   async findAll(
@@ -348,8 +356,12 @@ export class OrderController {
     }
   }
 
+  // ── Admin-only endpoints ──────────────────────────────────────────────
+
   @Put('/:id')
-  @ApiOperation({ summary: 'Update an order' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({ summary: 'Update an order (admin only)' })
   async update(
     @Param('id') id: string,
     @Body() updateOrderDto: UpdateOrderDto,
@@ -373,7 +385,9 @@ export class OrderController {
   }
 
   @Patch('/:id/status')
-  @ApiOperation({ summary: 'Update an order tracking status' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({ summary: 'Update an order tracking status (admin only)' })
   async updateStatus(
     @Param('id') id: string,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
@@ -402,8 +416,45 @@ export class OrderController {
     }
   }
 
+  // ── Cancel endpoint (both admin and customer/room) ────────────────────
+
+  @Patch('/:id/cancel')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Cancel an order (available to both admin and customer before done status)',
+  })
+  async cancelOrder(
+    @Request() req,
+    @Param('id') id: string,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    try {
+      const cancelledBy = req.user.type === 'human' ? 'admin' : 'customer';
+      const order = await this.orderService.cancelOrder(id, cancelledBy);
+      reply.code(200).send({
+        statusCode: 200,
+        statusMessage: 'Success',
+        data: order,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error cancelling order: ${error.message}`,
+        error.stack,
+      );
+      reply.code(error.status || 500).send({
+        statusCode: error.status || 500,
+        statusMessage: 'Failed',
+        error: error.message,
+      });
+    }
+  }
+
+  // ── Admin-only endpoint ───────────────────────────────────────────────
+
   @Delete('/:id')
-  @ApiOperation({ summary: 'Delete an order' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({ summary: 'Delete an order (admin only)' })
   async remove(
     @Param('id') id: string,
     @Res() reply: FastifyReply,
