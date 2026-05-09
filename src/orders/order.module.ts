@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
+import { OrderGateway } from './order.gateway';
 import { OrderRepository } from './order.repository';
 import { PrismaModule } from '../prisma/prisma.module';
 
@@ -16,6 +17,7 @@ import { PrismaModule } from '../prisma/prisma.module';
       provide: 'IOrderRepository',
       useClass: OrderRepository,
     },
+    OrderGateway,
   ],
   exports: ['IOrderService', 'IOrderRepository'],
 })

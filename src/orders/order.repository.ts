@@ -110,13 +110,29 @@ export class OrderRepository implements IOrderRepository {
         };
       }
 
-      let allFilters = { ...filters };
+      let allFilters: any = { ...filters };
 
       // Add hidden filter - default to false unless explicitly set
       if (hidden !== undefined) {
         allFilters.hidden = hidden === 'true' || hidden === true;
       } else {
         allFilters.hidden = false; // Default to showing only non-hidden orders
+      }
+
+      // Handle advanced status filters
+      if (allFilters.status) {
+        if (allFilters.status === 'active') {
+          // Active means not done and not cancelled
+          allFilters.status = {
+            in: [OrderStatus.PENDING, OrderStatus.RECEIVED, OrderStatus.IN_PROGRESS],
+          };
+        } else if (allFilters.status === 'canceled_by_admin') {
+          allFilters.status = OrderStatus.CANCELLED;
+          allFilters.cancelledBy = 'admin';
+        } else if (allFilters.status === 'canceled_by_customer') {
+          allFilters.status = OrderStatus.CANCELLED;
+          allFilters.cancelledBy = 'customer';
+        }
       }
 
       // Add hotel filter if provided
@@ -462,6 +478,21 @@ export class OrderRepository implements IOrderRepository {
       return this.prisma.order.update({
         where: { id },
         data: { status },
+        include: this.orderInclude,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async cancelOrder(id: string, cancelledBy: string): Promise<Order> {
+    try {
+      return this.prisma.order.update({
+        where: { id },
+        data: { 
+          status: OrderStatus.CANCELLED,
+          cancelledBy 
+        },
         include: this.orderInclude,
       });
     } catch (error) {
