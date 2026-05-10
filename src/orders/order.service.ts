@@ -46,10 +46,11 @@ export class OrderService implements IOrderService {
   async findAll(query?: Record<string, any>): Promise<Order[]> {
     try {
       const processedQuery = { ...(query || {}) };
-      if (processedQuery.status) {
-        processedQuery.status = this.resolveStatus(processedQuery.status);
-      }
 
+      // We do NOT use this.resolveStatus() here because the query filter
+      // supports advanced statuses like 'active', 'canceled_by_admin', etc.,
+      // which the repository handles internally.
+      
       return this.orderRepository.findAll(processedQuery);
     } catch (error) {
       throw error;
