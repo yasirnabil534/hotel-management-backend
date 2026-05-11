@@ -32,12 +32,15 @@ export class OrderService implements IOrderService {
         return sum + product.price * product.quantity;
       }, 0);
 
-      return this.orderRepository.create({
+      const order = await this.orderRepository.create({
         ...orderData,
         status,
         total,
         orderProducts,
       });
+
+      this.orderGateway.emitOrderCreated(order);
+      return order;
     } catch (error) {
       throw error;
     }

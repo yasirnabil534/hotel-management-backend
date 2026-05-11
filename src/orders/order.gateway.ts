@@ -46,6 +46,13 @@ export class OrderGateway {
 
   // ── Methods called by OrderService ────────────────────────────────────
 
+  /** Broadcast when a new order is created. */
+  emitOrderCreated(order: Order): void {
+    const room = `hotel:${order.hotelId}`;
+    this.server.to(room).emit('order:created', order);
+    this.logger.log(`Emitted order:created for order ${order.id} to ${room}`);
+  }
+
   /** Broadcast when admin advances order status. */
   emitOrderStatusUpdate(order: Order): void {
     const room = `hotel:${order.hotelId}`;
