@@ -46,6 +46,7 @@ model Hotel {
   category      Category[]
   systemService SystemService[]
   Order         Order[]
+  mealPlans     MealPlan[]
 }
 
 model Service {
@@ -228,27 +229,73 @@ model RoomSession {
 }
 
 model RoomBooking {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  roomId       String   @db.ObjectId
-  userId       String?  @db.ObjectId  // Optional: if user is in system
-  userName     String   // Guest name (required even if userId exists)
-  userEmail    String?  // Guest email
-  userPhone    String?  // Guest phone
-  checkInDate  DateTime
-  checkOutDate DateTime
-  roomPrice    Float    // Price per night/period
-  numberOfNights Int
-  subtotal     Float    // roomPrice * numberOfNights
-  discount     Float    @default(0)
-  total        Float    // subtotal - discount
-  paid         Float    @default(0)
-  balance      Float    // total - paid
-  status       String   @default("pending")  // pending, confirmed, checked-in, checked-out, cancelled
-  notes        String?
-  createdBy    String?  @db.ObjectId  // Admin who created the booking
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  roomId          String   @db.ObjectId
+  userId          String?  @db.ObjectId  // Optional: if user is in system
+  userName        String   // Guest name (required even if userId exists)
+  userEmail       String?  // Guest email
+  userPhone       String?  // Guest phone
+  checkInDate     DateTime
+  checkOutDate    DateTime
+  guestCount      Int      @default(1)   // Total guests in the room
+  numberOfNights  Int
+  roomPrice       Float    // Price per night/period
+  roomSubtotal    Float    // roomPrice * numberOfNights
 
-  room         Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  // Meal plan snapshot (captured at booking time)
+  mealPlanId      String?  @db.ObjectId
+  mealPlanName    String?
+  mealPlanType    String?  // package, buffet
+  mealPricingType String?  // per_booking, per_night, per_guest, per_guest_per_night
+  mealPrice       Float    @default(0)
+  mealGuestCount  Int      @default(0)
+  mealSubtotal    Float    @default(0)
+  mealItems       Json?    // Snapshot of meal items at booking time
+
+  subtotal        Float    // roomSubtotal + mealSubtotal
+  discount        Float    @default(0)
+  total           Float    // subtotal - discount
+  paid            Float    @default(0)
+  balance         Float    // total - paid
+  status          String   @default("pending")  // pending, confirmed, checked-in, checked-out, cancelled
+  notes           String?
+  createdBy       String?  @db.ObjectId  // Admin who created the booking
+  updatedBy       String?  @db.ObjectId  // Admin who last updated the booking
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model MealPlan {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  hotelId     String   @db.ObjectId
+  name        String
+  description String?
+  type        String   @default("package")            // package, buffet
+  pricingType String   @default("per_guest_per_night") // per_booking, per_night, per_guest, per_guest_per_night
+  price       Float
+  isActive    Boolean  @default(true)
+  createdBy   String?  @db.ObjectId
+  updatedBy   String?  @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotel       Hotel      @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  items       MealItem[]
+}
+
+model MealItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  mealPlanId  String   @db.ObjectId
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdBy   String?  @db.ObjectId
+  updatedBy   String?  @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  mealPlan    MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
 }

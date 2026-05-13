@@ -7,6 +7,7 @@ import { CategoryModule } from './categories/category.module';
 import { DynamicServicesModule } from './dynamic-services/dynamic-services.module';
 import { HotelDetailsModule } from './hotel-details/hotel-details.module';
 import { HotelModule } from './hotels/hotel.module';
+import { MealPlanModule } from './meal-plans/meal-plan.module';
 import { OrderProductModule } from './order-products/order-product.module';
 import { OrderModule } from './orders/order.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -36,6 +37,7 @@ import { UsersModule } from './users/user.module';
     OrderModule,
     OrderProductModule,
     CartModule,
+    MealPlanModule,
   ],
   controllers: [AppController],
   providers: [AppService],
