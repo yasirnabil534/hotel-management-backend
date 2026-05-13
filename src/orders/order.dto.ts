@@ -44,6 +44,55 @@ export class UpdateOrderDto {
   total?: number;
 }
 
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  type: string;
+  hotelId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Hotel {
+  id: string;
+  name: string;
+  address: string;
+  rating: number;
+  ownerId: string;
+  hotelDetailsId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Room {
+  id: string;
+  roomCode: string;
+  name: string;
+  category?: string;
+  status: string;
+  hotelId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export interface OrderProduct {
+  id: string;
+  orderId: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  createdAt: Date;
+  updatedAt: Date;
+  product?: Product;
+}
+
 export interface Order {
   id: string;
   userId?: string;
@@ -54,4 +103,8 @@ export interface Order {
   total: number;
   createdAt: Date;
   updatedAt: Date;
+  user?: User;
+  hotel?: Hotel;
+  room?: Room;
+  OrderProduct?: OrderProduct[];
 }
