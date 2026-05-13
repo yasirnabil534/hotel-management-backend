@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateRoomDto {
   @ApiProperty({ example: 'Room 101', description: 'The name of the room' })
@@ -33,6 +33,11 @@ export class CreateRoomDto {
   @IsOptional()
   @IsString()
   hotelId?: string;
+
+  @ApiProperty({ example: 150.0, description: 'Default nightly room rate (used when creating a booking without roomPrice)' })
+  @IsNumber()
+  @Min(0)
+  initialPrice: number;
 }
 
 export class UpdateRoomDto {
@@ -69,6 +74,12 @@ export class UpdateRoomDto {
   @IsOptional()
   @IsString()
   hotelId?: string;
+
+  @ApiProperty({ example: 150.0, description: 'Default nightly room rate', required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  initialPrice?: number;
 }
 
 export class RoomLoginDto {

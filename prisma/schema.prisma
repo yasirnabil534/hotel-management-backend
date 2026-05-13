@@ -200,6 +200,7 @@ model Room {
   category     String?  @default("customer")  // Optional category, defaults to "customer"
   status       String   @default("available")  // available, booked, unavailable
   hotelId      String?  @db.ObjectId
+  initialPrice Float    @default(0)  // default nightly rate; used when booking omits roomPrice
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

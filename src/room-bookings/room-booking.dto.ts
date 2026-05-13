@@ -33,10 +33,11 @@ export class CreateRoomBookingDto {
   @IsDateString()
   checkOutDate: string;
 
-  @ApiProperty({ example: 150.00, description: 'Room price per night' })
+  @ApiProperty({ example: 150.0, description: 'Room price per night (omit to use the room initialPrice)', required: false })
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  roomPrice: number;
+  roomPrice?: number;
 
   @ApiProperty({ example: 5, description: 'Number of nights' })
   @IsNumber()

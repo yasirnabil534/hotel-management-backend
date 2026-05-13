@@ -60,8 +60,13 @@ export class RoomBookingService implements IRoomBookingService {
         throw new BadRequestException('Check-out date must be after check-in date');
       }
 
+      const effectiveRoomPrice = createRoomBookingDto.roomPrice ?? room.initialPrice;
+      if (effectiveRoomPrice == null || Number.isNaN(Number(effectiveRoomPrice))) {
+        throw new BadRequestException('Provide roomPrice or set initialPrice on the room.');
+      }
+
       // Calculate room subtotal
-      const roomSubtotal = createRoomBookingDto.roomPrice * createRoomBookingDto.numberOfNights;
+      const roomSubtotal = effectiveRoomPrice * createRoomBookingDto.numberOfNights;
       const guestCount = createRoomBookingDto.guestCount || 1;
       const mealGuestCount = createRoomBookingDto.mealGuestCount || 0;
 
@@ -116,7 +121,7 @@ export class RoomBookingService implements IRoomBookingService {
         checkOutDate: checkOut,
         guestCount,
         numberOfNights: createRoomBookingDto.numberOfNights,
-        roomPrice: createRoomBookingDto.roomPrice,
+        roomPrice: effectiveRoomPrice,
         roomSubtotal,
         mealPlanId,
         mealPlanName,
