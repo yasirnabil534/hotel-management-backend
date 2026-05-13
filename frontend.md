@@ -1,6 +1,6 @@
-# Frontend implementation plan — meal plans and room bookings
+# Frontend implementation plan — meal plans, room default pricing, and room bookings
 
-This document is for frontend developers integrating the hotel admin panel with the NestJS backend. It covers **meal plan CRUD**, **meal items**, and **room booking** flows including meal selection, pricing display rules, and stored snapshots.
+This document is for frontend developers integrating the hotel admin panel with the NestJS backend. It covers **meal plan CRUD**, **meal items**, **room default pricing (`initialPrice`)**, and **room booking** flows including meal selection, pricing display rules, and stored snapshots.
 
 Reference backend story and schema notes: `develop.md`. Live contract: Swagger UI at `{API_ORIGIN}/api` (Bearer JWT).
 
@@ -26,6 +26,7 @@ Reference backend story and schema notes: `develop.md`. Live contract: Swagger U
 
 **Base paths (no global API prefix in current backend):**
 
+- Rooms: `/rooms`
 - Meal plans: `/meal-plans`
 - Room bookings: `/room-bookings`
 
@@ -91,20 +92,56 @@ Use consistent labels and validation messages.
 
 ---
 
-## 5. Feature B — Room booking with meal plan
+## 5. Feature A2 — Rooms: default nightly rate (`initialPrice`)
 
-### 5.1 User stories
+The backend stores a **default per-night rate** on each room. New bookings can **omit `roomPrice`** in the create-booking payload; the server then uses **`room.initialPrice`**. Admins can still override by sending **`roomPrice`** on the booking (e.g. promotions or negotiated rates).
+
+### 5.0.1 User stories
+
+1. When **creating a room**, the admin must send **`initialPrice`** (number ≥ 0). This is the default nightly rate for that physical room.
+2. When **editing a room**, the admin may update **`initialPrice`** without changing the password.
+3. When **creating a booking**, the form should **pre-fill** the room line amount from the selected room’s **`initialPrice`** (per night), but the user may change it before submit.
+4. The client may **omit `roomPrice`** on `POST /room-bookings` if it wants the server to use the room’s stored rate; if the room has no usable rate and `roomPrice` is omitted, the API returns **400** with a message to provide `roomPrice` or set `initialPrice` on the room.
+
+### 5.0.2 API reference — rooms
+
+| Action | Method | Path | Body notes |
+|--------|--------|------|------------|
+| Create room | `POST` | `/rooms` | **Required:** `name`, `password`, **`initialPrice`** (≥ 0). Optional: `category`, `status`, `hotelId`. Response includes `roomCode` (do not send on create). |
+| Update room | `PATCH` | `/rooms/:id` | Partial: `name`, `password`, `category`, `status`, `hotelId`, **`initialPrice`**. |
+| Get one / list | `GET` | `/rooms`, `/rooms/:id` | Response objects include **`initialPrice`**. Use it to pre-fill booking price and to show in room admin tables. |
+
+**Auth:** Room routes use the same Bearer JWT as the rest of the admin API (see Swagger `/api`).
+
+### 5.0.3 UI modules (suggested)
+
+1. **Room create/edit form** — add numeric field **“Default nightly rate”** bound to `initialPrice`; validate ≥ 0; show helper text that this value is used when a booking does not specify `roomPrice`.
+2. **Room list/detail** — show **`initialPrice`** in the table or detail panel so staff can see the default rate at a glance.
+3. **Booking create form** — when the user selects a room, set the displayed “price per night” from **`room.initialPrice`** (from the room fetch or list payload). On submit, either send that value as **`roomPrice`** or omit **`roomPrice`** to let the server apply **`initialPrice`** (both are valid; sending `roomPrice` makes the submitted amount explicit in the request).
+
+### 5.0.4 Frontend validation (client-side)
+
+- `initialPrice` ≥ 0 on room create/update.
+- On booking create, if the UI clears the price field, either block submit until a rate is chosen or omit `roomPrice` only when **`initialPrice` > 0** (or align with product: allow 0 and let server accept 0).
+
+---
+
+## 6. Feature B — Room booking with meal plan
+
+### 6.1 User stories
 
 1. When creating a booking, admin picks dates, room, guest count, optional linked user, discount, paid amount, notes.
 2. Admin may select **one optional meal plan** from plans filtered by **same hotel as the room** (the UI should filter client-side or via `hotelId` + `isActive=true` on `/meal-plans`).
 3. Admin sets **meal guest count** when a subset of guests should be charged for meals; if omitted or `0`, the backend uses **`guestCount`** for meal calculation.
 4. Booking detail shows **snapshot** fields (plan name, type, pricing, line items) for historical accuracy.
 
-### 5.2 Create booking — `POST /room-bookings`
+### 6.2 Create booking — `POST /room-bookings`
 
-Required body fields: `roomId`, `userName`, `checkInDate`, `checkOutDate`, `roomPrice`, `numberOfNights`.
+Required body fields: `roomId`, `userName`, `checkInDate`, `checkOutDate`, `numberOfNights`.
 
-Optional: `userId`, `userEmail`, `userPhone`, `guestCount` (default 1), **`mealPlanId`**, **`mealGuestCount`**, `discount`, `paid`, `status`, `notes`.
+**`roomPrice` (per night):** optional. If omitted, the server uses the selected room’s **`initialPrice`**. If you send **`roomPrice`**, that value is used (override). If neither yields a valid number, the API returns **400** (`Provide roomPrice or set initialPrice on the room.`).
+
+Optional: `userId`, `userEmail`, `userPhone`, `guestCount` (default 1), **`roomPrice`**, **`mealPlanId`**, **`mealGuestCount`**, `discount`, `paid`, `status`, `notes`.
 
 **Server behavior the UI must respect:**
 
@@ -113,7 +150,7 @@ Optional: `userId`, `userEmail`, `userPhone`, `guestCount` (default 1), **`mealP
 - If `mealPlanId` is set: plan must exist and **`isActive === true`**, or the API returns a bad request.
 - Meal snapshot and `mealSubtotal` are computed server-side; **`mealGuestCount` on stored booking** is `0` when no meal plan; otherwise it is the effective count used (explicit `mealGuestCount` if &gt; 0, else `guestCount`).
 
-### 5.3 Update booking — `PATCH /room-bookings/:id`
+### 6.3 Update booking — `PATCH /room-bookings/:id`
 
 Partial updates supported for the same guest/date/price/nights fields plus `mealPlanId` and `mealGuestCount`.
 
@@ -125,7 +162,7 @@ Partial updates supported for the same guest/date/price/nights fields plus `meal
 
 The UI should reload the returned booking after patch.
 
-### 5.4 Other booking endpoints (existing)
+### 6.4 Other booking endpoints (existing)
 
 | Action | Method | Path |
 |--------|--------|------|
@@ -137,11 +174,12 @@ The UI should reload the returned booking after patch.
 
 **Listing by room:** Prefer `GET /room-bookings?roomId=<objectId>` so filters match the controller’s `findAll` contract. If dedicated nested routes are added later, align with Swagger.
 
-### 5.5 Display formulas (for “preview” before submit)
+### 6.5 Display formulas (for “preview” before submit)
 
 Let `nights = numberOfNights`, `guests = guestCount`, `mealGuests = mealGuestCount > 0 ? mealGuestCount : guests`.
 
-- `roomSubtotal = roomPrice * nights`
+- Let `ratePerNight = roomPrice ?? selectedRoom.initialPrice` (mirror the server for preview; the persisted booking always returns an explicit `roomPrice` after save).
+- `roomSubtotal = ratePerNight * nights`
 - Meal subtotal from selected plan’s `price` and `pricingType`:
 
   - `per_booking` → `price`
@@ -155,7 +193,7 @@ Let `nights = numberOfNights`, `guests = guestCount`, `mealGuests = mealGuestCou
 
 Show a disclaimer that **invoice numbers match the API response** after save.
 
-### 5.6 Booking detail / print view
+### 6.6 Booking detail / print view
 
 Render snapshot block when `mealPlanId` or `mealPlanName` is present:
 
@@ -168,13 +206,36 @@ Do not fetch the live meal plan for historical totals; use snapshot fields only.
 
 ---
 
-## 6. TypeScript types (suggested)
+## 7. TypeScript types (suggested)
 
 Align with API responses; adjust `Date` vs `string` per your HTTP client.
 
 ```typescript
 type MealPlanType = 'package' | 'buffet';
 type MealPricingType = 'per_booking' | 'per_night' | 'per_guest' | 'per_guest_per_night';
+
+/** Room admin / auth responses may omit password; list/detail include initialPrice. */
+interface Room {
+  id: string;
+  roomCode: string;
+  name: string;
+  category?: string;
+  status: string;
+  hotelId?: string;
+  initialPrice: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** POST /rooms — initialPrice required (≥ 0). */
+interface CreateRoomPayload {
+  name: string;
+  password: string;
+  initialPrice: number;
+  category?: string;
+  status?: string;
+  hotelId?: string;
+}
 
 interface MealItem {
   id: string;
@@ -233,23 +294,44 @@ interface RoomBooking {
   createdAt: string;
   updatedAt: string;
 }
+
+/** POST /room-bookings — omit roomPrice to use the room's initialPrice on the server. */
+interface CreateRoomBookingPayload {
+  roomId: string;
+  userName: string;
+  checkInDate: string;
+  checkOutDate: string;
+  numberOfNights: number;
+  roomPrice?: number;
+  userId?: string;
+  userEmail?: string;
+  userPhone?: string;
+  guestCount?: number;
+  mealPlanId?: string;
+  mealGuestCount?: number;
+  discount?: number;
+  paid?: number;
+  status?: string;
+  notes?: string;
+}
 ```
 
 ---
 
-## 7. Implementation order (recommended)
+## 8. Implementation order (recommended)
 
-1. **API client layer** — typed functions for `/meal-plans` and `/room-bookings`; central error handling for `error` message string.
-2. **Meal plan list + filters** — `hotelId`, `isActive`, `search`.
-3. **Meal plan create/edit + items** — including `isActive` on plan for “disable for new bookings”.
-4. **Booking form** — room picker (available only), dates, guest count, optional meal plan picker (plans filtered `isActive` + hotel match), `mealGuestCount` optional field with helper text.
-5. **Price preview** — mirror server formulas; on success, replace with response totals.
-6. **Booking detail** — snapshot section and payment/release actions if already in your app.
-7. **QA checklist** — inactive plan blocked; room not available; checkout before checkin; change nights with meal and verify `mealSubtotal` uses snapshot price; remove meal on update.
+1. **API client layer** — typed functions for `/rooms`, `/meal-plans`, and `/room-bookings`; central error handling for `error` message string.
+2. **Rooms** — extend create/update payloads and forms with **`initialPrice`**; show it on room list/detail; ensure **`POST /rooms`** sends **`initialPrice`** (≥ 0).
+3. **Meal plan list + filters** — `hotelId`, `isActive`, `search`.
+4. **Meal plan create/edit + items** — including `isActive` on plan for “disable for new bookings”.
+5. **Booking form** — room picker (available only); on room change, pre-fill nightly rate from **`room.initialPrice`**; allow override; you may omit **`roomPrice`** on submit so the server uses **`initialPrice`**. Dates, guest count, optional meal plan picker (plans filtered `isActive` + hotel match), `mealGuestCount` optional field with helper text.
+6. **Price preview** — use §6.5 formulas (`roomPrice ?? room.initialPrice`); on success, replace with response totals.
+7. **Booking detail** — snapshot section and payment/release actions if already in your app.
+8. **QA checklist** — inactive plan blocked; room not available; checkout before checkin; create booking **without** `roomPrice` when room has `initialPrice`; create booking **with** `roomPrice` override; change nights with meal and verify `mealSubtotal` uses snapshot price; remove meal on update.
 
 ---
 
-## 8. Open points to verify during integration
+## 9. Open points to verify during integration
 
 1. **Removing a meal on PATCH** — confirm whether the API expects `mealPlanId: null`, empty string, or omission; align the client once verified against Swagger or a quick integration test.
 2. **Room ↔ hotel association** — ensure the meal plan picker only shows plans for the hotel that owns the selected room (derive `hotelId` from room detail if the booking form already loads room).
@@ -257,12 +339,14 @@ interface RoomBooking {
 
 ---
 
-## 9. Deliverables checklist for the frontend PR
+## 10. Deliverables checklist for the frontend PR
 
 - [ ] Meal plan CRUD UI + items CRUD wired to documented routes.
+- [ ] Room create/edit includes **`initialPrice`**; room list/detail surfaces default nightly rate.
+- [ ] Booking create pre-fills nightly rate from selected room; supports optional **`roomPrice`** on create (server fallback to **`initialPrice`**).
 - [ ] Booking create/update sends `mealPlanId` / `mealGuestCount` as needed; handles validation errors from API.
 - [ ] Booking UI shows meal snapshot on detail/history views.
-- [ ] Copy/tooltips explain `pricingType` and effective meal guest count.
+- [ ] Copy/tooltips explain `pricingType`, effective meal guest count, and when **`roomPrice`** is optional.
 - [ ] Swagger `/api` exercised for happy paths and main error paths.
 
 ---

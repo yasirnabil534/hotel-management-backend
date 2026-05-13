@@ -30,6 +30,9 @@ export class RoomEntity {
   })
   hotelId?: string;
 
+  @ApiProperty({ example: 150.0, description: 'Default nightly room rate' })
+  initialPrice: number;
+
   @ApiProperty({ example: '2024-01-01T00:00:00.000Z', description: 'Creation timestamp' })
   createdAt: Date;
 
