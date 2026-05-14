@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto, Order, UpdateOrderDto } from './order.dto';
 import { IOrderRepository } from './order.interface';
+import { OrderStatus } from './order-status.enum';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -11,7 +12,26 @@ export class OrderRepository implements IOrderRepository {
     try {
       const { orderProducts, ...orderData } = createOrderDto;
 
-      return this.prisma.$transaction(async (prisma) => {
+      return this.prisma.$transaction(async prisma => {
+        const productIds = [...new Set(orderProducts.map(product => product.productId))];
+        const products = await prisma.product.findMany({
+          where: {
+            id: {
+              in: productIds,
+            },
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        const foundProductIds = new Set(products.map(product => product.id));
+        const missingProductIds = productIds.filter(productId => !foundProductIds.has(productId));
+
+        if (missingProductIds.length > 0) {
+          throw new BadRequestException(`Invalid productId(s): ${missingProductIds.join(', ')}`);
+        }
+
         // Create the order first
         const order = await prisma.order.create({
           data: orderData as any,
@@ -21,7 +41,7 @@ export class OrderRepository implements IOrderRepository {
         await prisma.orderProduct.createMany({
           data: orderProducts.map(product => ({
             ...product,
-            orderId: order.id
+            orderId: order.id,
           })),
         });
 
@@ -68,7 +88,18 @@ export class OrderRepository implements IOrderRepository {
 
   async findAll(query?: Record<string, any>): Promise<Order[]> {
     try {
-      const { page, limit, sortBy, sortOrder, search, hidden, hotelId, customerId, ...filters } = query || {};
+      const {
+        page,
+        limit,
+        sortBy,
+        sortOrder,
+        search,
+        hidden,
+        hotelId,
+        customerId,
+        roomId,
+        ...filters
+      } = query || {};
       const skip = page ? (parseInt(page) - 1) * parseInt(limit || '10') : 0;
       const take = limit ? parseInt(limit) : 10;
 
@@ -79,13 +110,29 @@ export class OrderRepository implements IOrderRepository {
         };
       }
 
-      let allFilters = { ...filters };
-      
+      let allFilters: any = { ...filters };
+
       // Add hidden filter - default to false unless explicitly set
       if (hidden !== undefined) {
         allFilters.hidden = hidden === 'true' || hidden === true;
       } else {
         allFilters.hidden = false; // Default to showing only non-hidden orders
+      }
+
+      // Handle advanced status filters
+      if (allFilters.status) {
+        if (allFilters.status === 'active') {
+          // Active means not done and not cancelled
+          allFilters.status = {
+            in: [OrderStatus.PENDING, OrderStatus.RECEIVED, OrderStatus.IN_PROGRESS],
+          };
+        } else if (allFilters.status === 'canceled_by_admin') {
+          allFilters.status = OrderStatus.CANCELLED;
+          allFilters.cancelledBy = 'admin';
+        } else if (allFilters.status === 'canceled_by_customer') {
+          allFilters.status = OrderStatus.CANCELLED;
+          allFilters.cancelledBy = 'customer';
+        }
       }
 
       // Add hotel filter if provided
@@ -97,7 +144,11 @@ export class OrderRepository implements IOrderRepository {
       if (customerId) {
         allFilters.userId = customerId;
       }
-      
+
+      if (roomId) {
+        allFilters.roomId = roomId;
+      }
+
       if (search) {
         allFilters = {
           ...allFilters,
@@ -159,9 +210,9 @@ export class OrderRepository implements IOrderRepository {
   async findOne(id: string): Promise<Order | null> {
     try {
       return this.prisma.order.findFirst({
-        where: { 
+        where: {
           id,
-          hidden: false
+          hidden: false,
         },
         include: {
           user: {
@@ -209,9 +260,9 @@ export class OrderRepository implements IOrderRepository {
   async findByUser(userId: string): Promise<Order[]> {
     try {
       return this.prisma.order.findMany({
-        where: { 
+        where: {
           userId,
-          hidden: false
+          hidden: false,
         },
         include: {
           user: {
@@ -256,12 +307,29 @@ export class OrderRepository implements IOrderRepository {
     }
   }
 
+  async findByRoom(roomId: string): Promise<Order[]> {
+    try {
+      return this.prisma.order.findMany({
+        where: {
+          roomId,
+          hidden: false,
+        },
+        include: this.orderInclude,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findByHotel(hotelId: string): Promise<Order[]> {
     try {
       return this.prisma.order.findMany({
-        where: { 
+        where: {
           hotelId,
-          hidden: false
+          hidden: false,
         },
         include: {
           user: {
@@ -309,10 +377,10 @@ export class OrderRepository implements IOrderRepository {
   async findByHotelAndUser(hotelId: string, userId: string): Promise<Order[]> {
     try {
       return this.prisma.order.findMany({
-        where: { 
+        where: {
           hotelId,
           userId,
-          hidden: false
+          hidden: false,
         },
         include: {
           user: {
@@ -405,6 +473,33 @@ export class OrderRepository implements IOrderRepository {
     }
   }
 
+  async updateStatus(id: string, status: OrderStatus): Promise<Order> {
+    try {
+      return this.prisma.order.update({
+        where: { id },
+        data: { status },
+        include: this.orderInclude,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async cancelOrder(id: string, cancelledBy: string): Promise<Order> {
+    try {
+      return this.prisma.order.update({
+        where: { id },
+        data: { 
+          status: OrderStatus.CANCELLED,
+          cancelledBy 
+        },
+        include: this.orderInclude,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async remove(id: string): Promise<void> {
     try {
       await this.prisma.order.delete({
@@ -413,5 +508,45 @@ export class OrderRepository implements IOrderRepository {
     } catch (error) {
       throw error;
     }
+  }
+
+  private get orderInclude() {
+    return {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          type: true,
+          hotelId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+      hotel: true,
+      room: {
+        select: {
+          id: true,
+          roomCode: true,
+          name: true,
+          category: true,
+          status: true,
+          hotelId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+      OrderProduct: {
+        include: {
+          product: {
+            select: {
+              name: true,
+              id: true,
+              price: true,
+            },
+          },
+        },
+      },
+    };
   }
 }

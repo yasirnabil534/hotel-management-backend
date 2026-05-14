@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { RoomBooking } from '@prisma/client';
 import { IRoomService } from '../rooms/room.interface';
+import { IMealPlanService } from '../meal-plans/meal-plan.interface';
 import { CreateRoomBookingDto, UpdateRoomBookingDto } from './room-booking.dto';
 import { IRoomBookingRepository, IRoomBookingService } from './room-booking.interface';
 
@@ -13,7 +14,32 @@ export class RoomBookingService implements IRoomBookingService {
     private roomBookingRepository: IRoomBookingRepository,
     @Inject('IRoomService')
     private roomService: IRoomService,
+    @Inject('IMealPlanService')
+    private mealPlanService: IMealPlanService,
   ) {}
+
+  /**
+   * Calculate meal subtotal based on pricing type.
+   */
+  private calculateMealSubtotal(
+    price: number,
+    pricingType: string,
+    guestCount: number,
+    nights: number,
+  ): number {
+    switch (pricingType) {
+      case 'per_booking':
+        return price;
+      case 'per_night':
+        return price * nights;
+      case 'per_guest':
+        return price * guestCount;
+      case 'per_guest_per_night':
+        return price * guestCount * nights;
+      default:
+        return price * guestCount * nights;
+    }
+  }
 
   async create(createRoomBookingDto: CreateRoomBookingDto, createdBy?: string): Promise<RoomBooking> {
     try {
@@ -26,13 +52,6 @@ export class RoomBookingService implements IRoomBookingService {
         throw new ConflictException(`Room is currently "${room.status}" and cannot be booked`);
       }
 
-      // Calculate subtotal, total, and balance
-      const subtotal = createRoomBookingDto.roomPrice * createRoomBookingDto.numberOfNights;
-      const discount = createRoomBookingDto.discount || 0;
-      const total = subtotal - discount;
-      const paid = createRoomBookingDto.paid || 0;
-      const balance = total - paid;
-
       // Validate dates
       const checkIn = new Date(createRoomBookingDto.checkInDate);
       const checkOut = new Date(createRoomBookingDto.checkOutDate);
@@ -41,15 +60,86 @@ export class RoomBookingService implements IRoomBookingService {
         throw new BadRequestException('Check-out date must be after check-in date');
       }
 
+      const effectiveRoomPrice = createRoomBookingDto.roomPrice ?? room.initialPrice;
+      if (effectiveRoomPrice == null || Number.isNaN(Number(effectiveRoomPrice))) {
+        throw new BadRequestException('Provide roomPrice or set initialPrice on the room.');
+      }
+
+      // Calculate room subtotal
+      const roomSubtotal = effectiveRoomPrice * createRoomBookingDto.numberOfNights;
+      const guestCount = createRoomBookingDto.guestCount || 1;
+      const mealGuestCount = createRoomBookingDto.mealGuestCount || 0;
+
+      // Build meal snapshot data
+      let mealPlanId: string | undefined;
+      let mealPlanName: string | undefined;
+      let mealPlanType: string | undefined;
+      let mealPricingType: string | undefined;
+      let mealPrice = 0;
+      let mealSubtotal = 0;
+      let mealItems: any = null;
+
+      if (createRoomBookingDto.mealPlanId) {
+        const mealPlan = await this.mealPlanService.findOne(createRoomBookingDto.mealPlanId);
+
+        if (!mealPlan.isActive) {
+          throw new BadRequestException('Selected meal plan is not active');
+        }
+
+        mealPlanId = mealPlan.id;
+        mealPlanName = mealPlan.name;
+        mealPlanType = mealPlan.type;
+        mealPricingType = mealPlan.pricingType;
+        mealPrice = mealPlan.price;
+        mealItems = mealPlan.items
+          .filter((item) => item.isActive)
+          .map((item) => ({ name: item.name, description: item.description }));
+
+        const effectiveMealGuestCount = mealGuestCount > 0 ? mealGuestCount : guestCount;
+        mealSubtotal = this.calculateMealSubtotal(
+          mealPlan.price,
+          mealPlan.pricingType,
+          effectiveMealGuestCount,
+          createRoomBookingDto.numberOfNights,
+        );
+      }
+
+      // Calculate totals
+      const subtotal = roomSubtotal + mealSubtotal;
+      const discount = createRoomBookingDto.discount || 0;
+      const total = subtotal - discount;
+      const paid = createRoomBookingDto.paid || 0;
+      const balance = total - paid;
+
       const bookingData: any = {
-        ...createRoomBookingDto,
+        roomId: createRoomBookingDto.roomId,
+        userId: createRoomBookingDto.userId,
+        userName: createRoomBookingDto.userName,
+        userEmail: createRoomBookingDto.userEmail,
+        userPhone: createRoomBookingDto.userPhone,
         checkInDate: checkIn,
         checkOutDate: checkOut,
+        guestCount,
+        numberOfNights: createRoomBookingDto.numberOfNights,
+        roomPrice: effectiveRoomPrice,
+        roomSubtotal,
+        mealPlanId,
+        mealPlanName,
+        mealPlanType,
+        mealPricingType,
+        mealPrice,
+        mealGuestCount: createRoomBookingDto.mealPlanId
+          ? (mealGuestCount > 0 ? mealGuestCount : guestCount)
+          : 0,
+        mealSubtotal,
+        mealItems,
         subtotal,
-        total,
-        balance,
-        paid,
         discount,
+        total,
+        paid,
+        balance,
+        status: createRoomBookingDto.status || 'pending',
+        notes: createRoomBookingDto.notes,
       };
 
       if (createdBy) {
@@ -57,8 +147,8 @@ export class RoomBookingService implements IRoomBookingService {
       }
 
       // Update room status to "booked"
-      const updatedRoom = await this.roomService.update(createRoomBookingDto.roomId, { status: 'booked' });
-      
+      await this.roomService.update(createRoomBookingDto.roomId, { status: 'booked' });
+
       const booking = await this.roomBookingRepository.create(bookingData);
 
       return booking;
@@ -120,17 +210,99 @@ export class RoomBookingService implements IRoomBookingService {
       const numberOfNights = updateRoomBookingDto.numberOfNights ?? existingBooking.numberOfNights;
       const discount = updateRoomBookingDto.discount ?? existingBooking.discount;
       const paid = updateRoomBookingDto.paid ?? existingBooking.paid;
+      const guestCount = updateRoomBookingDto.guestCount ?? existingBooking.guestCount;
 
-      const subtotal = roomPrice * numberOfNights;
+      const roomSubtotal = roomPrice * numberOfNights;
+
+      // Handle meal plan update
+      let mealSubtotal = existingBooking.mealSubtotal;
+      let mealGuestCount = updateRoomBookingDto.mealGuestCount ?? existingBooking.mealGuestCount;
+      const mealSnapshotUpdate: any = {};
+
+      if (updateRoomBookingDto.mealPlanId !== undefined) {
+        if (updateRoomBookingDto.mealPlanId === null || updateRoomBookingDto.mealPlanId === '') {
+          // Removing meal plan
+          mealSnapshotUpdate.mealPlanId = null;
+          mealSnapshotUpdate.mealPlanName = null;
+          mealSnapshotUpdate.mealPlanType = null;
+          mealSnapshotUpdate.mealPricingType = null;
+          mealSnapshotUpdate.mealPrice = 0;
+          mealSnapshotUpdate.mealGuestCount = 0;
+          mealSnapshotUpdate.mealSubtotal = 0;
+          mealSnapshotUpdate.mealItems = null;
+          mealSubtotal = 0;
+          mealGuestCount = 0;
+        } else {
+          // Changing meal plan — re-snapshot
+          const mealPlan = await this.mealPlanService.findOne(updateRoomBookingDto.mealPlanId);
+
+          if (!mealPlan.isActive) {
+            throw new BadRequestException('Selected meal plan is not active');
+          }
+
+          const effectiveMealGuestCount = mealGuestCount > 0 ? mealGuestCount : guestCount;
+          mealSubtotal = this.calculateMealSubtotal(
+            mealPlan.price,
+            mealPlan.pricingType,
+            effectiveMealGuestCount,
+            numberOfNights,
+          );
+
+          mealSnapshotUpdate.mealPlanId = mealPlan.id;
+          mealSnapshotUpdate.mealPlanName = mealPlan.name;
+          mealSnapshotUpdate.mealPlanType = mealPlan.type;
+          mealSnapshotUpdate.mealPricingType = mealPlan.pricingType;
+          mealSnapshotUpdate.mealPrice = mealPlan.price;
+          mealSnapshotUpdate.mealGuestCount = effectiveMealGuestCount;
+          mealSnapshotUpdate.mealSubtotal = mealSubtotal;
+          mealSnapshotUpdate.mealItems = mealPlan.items
+            .filter((item) => item.isActive)
+            .map((item) => ({ name: item.name, description: item.description }));
+        }
+      } else if (
+        updateRoomBookingDto.mealGuestCount !== undefined ||
+        updateRoomBookingDto.numberOfNights !== undefined
+      ) {
+        // Recalculate meal subtotal if guest count or nights changed but meal plan stayed the same
+        if (existingBooking.mealPlanId && existingBooking.mealPricingType) {
+          const effectiveMealGuestCount = mealGuestCount > 0 ? mealGuestCount : guestCount;
+          mealSubtotal = this.calculateMealSubtotal(
+            existingBooking.mealPrice,
+            existingBooking.mealPricingType,
+            effectiveMealGuestCount,
+            numberOfNights,
+          );
+          mealSnapshotUpdate.mealGuestCount = effectiveMealGuestCount;
+          mealSnapshotUpdate.mealSubtotal = mealSubtotal;
+        }
+      }
+
+      const subtotal = roomSubtotal + mealSubtotal;
       const total = subtotal - discount;
       const balance = total - paid;
 
       const updateData: any = {
         ...updateRoomBookingDto,
+        ...mealSnapshotUpdate,
+        roomSubtotal,
         subtotal,
         total,
         balance,
+        guestCount,
       };
+
+      // Remove client-side input fields that are already processed into snapshot
+      delete updateData.mealPlanId;
+      if (mealSnapshotUpdate.mealPlanId !== undefined) {
+        updateData.mealPlanId = mealSnapshotUpdate.mealPlanId;
+      } else if (updateRoomBookingDto.mealPlanId === undefined) {
+        // Don't touch mealPlanId if not being updated
+        delete updateData.mealPlanId;
+      }
+      delete updateData.mealGuestCount;
+      if (mealSnapshotUpdate.mealGuestCount !== undefined) {
+        updateData.mealGuestCount = mealSnapshotUpdate.mealGuestCount;
+      }
 
       // Handle date updates
       if (updateRoomBookingDto.checkInDate) {
@@ -149,6 +321,9 @@ export class RoomBookingService implements IRoomBookingService {
 
       return await this.roomBookingRepository.update(id, updateData);
     } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
       if (error.code === 'P2025') {
         throw new NotFoundException(`Room booking with ID ${id} not found`);
       }
@@ -200,7 +375,7 @@ export class RoomBookingService implements IRoomBookingService {
       }
 
       // Update room status back to "available"
-      const updatedRoom = await this.roomService.update(booking.roomId, { status: 'available' });
+      await this.roomService.update(booking.roomId, { status: 'available' });
 
       // Update booking status to "checked-out"
       const updatedBooking = await this.roomBookingRepository.update(bookingId, {

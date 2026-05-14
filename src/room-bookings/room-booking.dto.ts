@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEmail, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsDateString, IsEmail, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateRoomBookingDto {
   @ApiProperty({ example: '507f1f77bcf86cd799439011', description: 'The room ID' })
@@ -33,15 +33,33 @@ export class CreateRoomBookingDto {
   @IsDateString()
   checkOutDate: string;
 
-  @ApiProperty({ example: 150.00, description: 'Room price per night' })
+  @ApiProperty({ example: 150.0, description: 'Room price per night (omit to use the room initialPrice)', required: false })
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  roomPrice: number;
+  roomPrice?: number;
 
   @ApiProperty({ example: 5, description: 'Number of nights' })
   @IsNumber()
   @Min(1)
   numberOfNights: number;
+
+  @ApiProperty({ example: 3, description: 'Total number of guests', required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  guestCount?: number;
+
+  @ApiProperty({ example: '507f1f77bcf86cd799439011', description: 'Meal plan ID (optional)', required: false })
+  @IsOptional()
+  @IsString()
+  mealPlanId?: string;
+
+  @ApiProperty({ example: 3, description: 'Number of guests for the meal plan', required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  mealGuestCount?: number;
 
   @ApiProperty({ example: 50.00, description: 'Discount amount', required: false })
   @IsOptional()
@@ -108,6 +126,23 @@ export class UpdateRoomBookingDto {
   @IsNumber()
   @Min(1)
   numberOfNights?: number;
+
+  @ApiProperty({ example: 3, description: 'Total number of guests', required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  guestCount?: number;
+
+  @ApiProperty({ example: '507f1f77bcf86cd799439011', description: 'Meal plan ID (optional)', required: false })
+  @IsOptional()
+  @IsString()
+  mealPlanId?: string;
+
+  @ApiProperty({ example: 3, description: 'Number of guests for the meal plan', required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  mealGuestCount?: number;
 
   @ApiProperty({ example: 50.00, description: 'Discount amount', required: false })
   @IsOptional()
