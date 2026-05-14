@@ -72,7 +72,10 @@ export class MealPlanRepository implements IMealPlanRepository {
       }
 
       if (isActive !== undefined) {
-        whereClause.isActive = isActive === 'true' || isActive === true;
+        // The QueryProcessorInterceptor converts 'true' → true, then
+        // Number(true) → 1, so isActive may arrive as boolean OR number 1/0.
+        whereClause.isActive =
+          isActive === true || isActive === 'true' || (isActive as any) === 1;
       }
 
       if (type) {
