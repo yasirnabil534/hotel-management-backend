@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 import { UserType } from '../utils/enums/user-type.enum';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { User } from './user.entity';

@@ -17,8 +17,8 @@ import { FastifyReply } from 'fastify';
 import { CreateServiceDto, UpdateServiceDto } from './service.dto';
 import { Service } from './service.entity';
 import { IServiceService } from './service.interface';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
-import { ObjectIdPipe } from 'src/utils/object-id.pipe';
+import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
+import { ObjectIdPipe } from '../utils/object-id.pipe';
 
 @ApiTags('Services APIs')
 @Controller('/services')

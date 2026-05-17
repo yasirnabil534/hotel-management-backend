@@ -16,7 +16,7 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateHotelDto, UpdateHotelDto } from './hotel.dto';
 import { IHotelService } from './hotel.interface';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 import { Hotel } from './hotel.entity';
 
 @ApiTags('Hotel APIs')

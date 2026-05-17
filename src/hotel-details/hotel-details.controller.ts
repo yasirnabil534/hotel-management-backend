@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 import { CreateHotelDetailsDto, UpdateHotelDetailsDto } from './hotel-details.dto';
 import { HotelDetails } from './hotel-details.entity';
 import { IHotelDetailsService } from './hotel-details.interface';

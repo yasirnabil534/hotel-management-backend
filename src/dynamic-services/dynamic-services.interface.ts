@@ -3,7 +3,7 @@ import {
   UpdateSystemServiceDto,
   SystemService,
 } from './dynamic-services.dto';
-import { ServiceTemplate } from 'src/service-templates/service-template.entity';
+import { ServiceTemplate } from '../service-templates/service-template.entity';
 
 export interface ISystemServiceRepository {
   create(
