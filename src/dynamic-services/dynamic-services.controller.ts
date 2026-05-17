@@ -19,7 +19,7 @@ import {
 } from './dynamic-services.dto';
 import { ISystemServiceService } from './dynamic-services.interface';
 import { Logger } from '@nestjs/common';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 import { SystemService } from './dynamic-services.entity';
 
 @ApiTags('Dynamic Services APIs')

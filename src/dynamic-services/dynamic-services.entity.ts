@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Hotel } from 'src/hotels/hotel.entity';
-import { ServiceTemplate } from 'src/service-templates/service-template.entity';
+import { Hotel } from '../hotels/hotel.entity';
+import { ServiceTemplate } from '../service-templates/service-template.entity';
 
 export class SystemService {
   @ApiProperty()

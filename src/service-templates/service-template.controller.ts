@@ -19,7 +19,7 @@ import {
 } from './service-template.dto';
 import { IServiceTemplateService } from './service-template.interface';
 import { Logger } from '@nestjs/common';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 import { ServiceTemplate } from './service-template.entity';
 
 @ApiTags('Service Templates APIs')

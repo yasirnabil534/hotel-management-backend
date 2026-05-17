@@ -17,7 +17,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { ICategoryService } from './category.interface';
 import { CreateCategoryDto, UpdateCategoryDto } from './category.dto';
 import { Category } from './category.entity';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 
 @ApiTags('Categories')
 @Controller('/categories')

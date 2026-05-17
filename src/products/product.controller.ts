@@ -17,7 +17,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateProductDto, UpdateProductDto } from './product.dto';
 import { Product } from './product.entity';
 import { IProductService } from './product.interface';
-import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 
 @ApiTags('Product APIs')
 @Controller('/products')
