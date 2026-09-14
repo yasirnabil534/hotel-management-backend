@@ -137,13 +137,22 @@ export class DynamicServicesRepository implements ISystemServiceRepository {
   }
 
   async remove(id: string): Promise<void> {
-    try {
-      await this.prisma.systemService.delete({
-        where: { id },
+    await this.prisma.$transaction(async (tx) => {
+      // Find all categories that belong to this service
+      const categories = await tx.category.findMany({
+        where: { serviceId: id },
+        select: { id: true },
       });
-    } catch (error) {
-      throw error;
-    }
+      const categoryIds = categories.map((c) => c.id);
+
+      // Delete all products in those categories, then the categories, then the service
+      if (categoryIds.length > 0) {
+        await tx.product.deleteMany({ where: { categoryId: { in: categoryIds } } });
+        await tx.category.deleteMany({ where: { id: { in: categoryIds } } });
+      }
+
+      await tx.systemService.delete({ where: { id } });
+    });
   }
 
   async findServicetemplateById(id: string): Promise<ServiceTemplate> {

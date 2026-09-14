@@ -12,6 +12,7 @@ import {
   Res,
   UseInterceptors,
 } from '@nestjs/common';
+import { ObjectIdPipe } from 'src/utils/object-id.pipe';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateProductDto, UpdateProductDto } from './product.dto';
@@ -203,7 +204,7 @@ export class ProductController {
     type: Product,
   })
   @ApiResponse({ status: 404, description: 'Product not found.' })
-  async findOne(@Param('id') id: string, @Res() reply: FastifyReply): Promise<void> {
+  async findOne(@Param('id', ObjectIdPipe) id: string, @Res() reply: FastifyReply): Promise<void> {
     try {
       const product = await this.productService.findOne(id);
       reply.send({
@@ -233,7 +234,7 @@ export class ProductController {
   })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   async update(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
     @Res() reply: FastifyReply,
   ): Promise<void> {
@@ -264,7 +265,7 @@ export class ProductController {
     description: 'The product has been successfully deleted.',
   })
   @ApiResponse({ status: 404, description: 'Product not found.' })
-  async remove(@Param('id') id: string, @Res() reply: FastifyReply): Promise<void> {
+  async remove(@Param('id', ObjectIdPipe) id: string, @Res() reply: FastifyReply): Promise<void> {
     try {
       await this.productService.remove(id);
       reply.code(200).send({

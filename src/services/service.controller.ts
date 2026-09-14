@@ -18,6 +18,7 @@ import { CreateServiceDto, UpdateServiceDto } from './service.dto';
 import { Service } from './service.entity';
 import { IServiceService } from './service.interface';
 import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { ObjectIdPipe } from 'src/utils/object-id.pipe';
 
 @ApiTags('Services APIs')
 @Controller('/services')
@@ -168,7 +169,7 @@ export class ServicesController {
   })
   @ApiResponse({ status: 404, description: 'Service not found.' })
   async findOne(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Res() reply: FastifyReply,
   ): Promise<void> {
     try {
@@ -200,7 +201,7 @@ export class ServicesController {
   })
   @ApiResponse({ status: 404, description: 'Service not found.' })
   async update(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Body() updateServiceDto: UpdateServiceDto,
     @Res() reply: FastifyReply,
   ): Promise<void> {
@@ -232,7 +233,7 @@ export class ServicesController {
   })
   @ApiResponse({ status: 404, description: 'Service not found.' })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Res() reply: FastifyReply,
   ): Promise<void> {
     try {

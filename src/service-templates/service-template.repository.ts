@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateServiceTemplateDto,
@@ -87,13 +87,18 @@ export class ServiceTemplateRepository implements IServiceTemplateRepository {
   }
 
   async remove(id: string): Promise<void> {
-    try {
-      await this.prisma.serviceTemplate.delete({
-        where: { id },
-      });
-    } catch (error) {
-      console.error(`Error removing service template with id ${id} in repository:`, error);
-      throw error;
+    const assignedCount = await this.prisma.systemService.count({
+      where: { serviceTemplateId: id },
+    });
+
+    if (assignedCount > 0) {
+      throw new ConflictException(
+        `Template is assigned to ${assignedCount} hotel${assignedCount > 1 ? 's' : ''}; delete the assignments first.`,
+      );
     }
+
+    await this.prisma.serviceTemplate.delete({
+      where: { id },
+    });
   }
 }
