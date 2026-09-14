@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateServiceTemplateDto {
   @ApiProperty({ description: 'The name of the service template' })
@@ -8,6 +8,7 @@ export class CreateServiceTemplateDto {
   name: string;
 
   @ApiProperty({ description: 'The image URL of the service template', required: false })
+  @IsOptional()
   @IsString()
   image?: string;
 
@@ -27,6 +28,7 @@ export class UpdateServiceTemplateDto {
     description: 'The name of the service template',
     required: false,
   })
+  @IsOptional()
   @IsString()
   name?: string;
 
@@ -34,6 +36,7 @@ export class UpdateServiceTemplateDto {
     description: 'The image URL of the service template',
     required: false,
   })
+  @IsOptional()
   @IsString()
   image?: string;
 
@@ -41,6 +44,7 @@ export class UpdateServiceTemplateDto {
     description: 'The description of the service template',
     required: false,
   })
+  @IsOptional()
   @IsString()
   description?: string;
 
@@ -48,6 +52,7 @@ export class UpdateServiceTemplateDto {
     description: 'The link associated with the service template',
     required: false,
   })
+  @IsOptional()
   @IsString()
   link?: string;
 }

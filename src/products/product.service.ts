@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Product } from './product.entity';
 import { CreateProductDto, UpdateProductDto } from './product.dto';
 import { IProductRepository, IProductService } from './product.interface';
@@ -14,7 +20,7 @@ export class ProductService implements IProductService {
     try {
       return this.productRepository.create(createProductDto);
     } catch (error) {
-      throw error;
+      this.handlePrismaError(error);
     }
   }
 
@@ -34,7 +40,7 @@ export class ProductService implements IProductService {
       }
       return product;
     } catch (error) {
-      throw error;
+      this.handlePrismaError(error, id);
     }
   }
 
@@ -61,10 +67,7 @@ export class ProductService implements IProductService {
     try {
       return await this.productRepository.update(id, updateProductDto);
     } catch (error) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Product with ID ${id} not found`);
-      }
-      throw error;
+      this.handlePrismaError(error, id);
     }
   }
 
@@ -72,10 +75,32 @@ export class ProductService implements IProductService {
     try {
       await this.productRepository.remove(id);
     } catch (error) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Product with ID ${id} not found`);
-      }
-      throw error;
+      this.handlePrismaError(error, id);
     }
   }
-}
+
+  /**
+   * Maps Prisma error codes to appropriate NestJS HTTP exceptions.
+   * P2025 → 404 Not Found
+   * P2002 → 409 Conflict (duplicate)
+   * P2023 → 400 Bad Request (malformed ObjectId)
+   */
+  private handlePrismaError(error: any, id?: string): never {
+    if (error?.status) {
+      // Already a NestJS HTTP exception (e.g. NotFoundException) — re-throw as-is
+      throw error;
+    }
+    switch (error?.code) {
+      case 'P2025':
+        throw new NotFoundException(
+          id ? `Product with ID ${id} not found` : 'Record not found',
+        );
+      case 'P2002':
+        throw new ConflictException('Duplicate record');
+      case 'P2023':
+        throw new BadRequestException('Malformed id');
+      default:
+        throw error;
+    }
+  }
+}

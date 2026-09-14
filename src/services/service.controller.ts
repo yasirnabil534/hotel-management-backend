@@ -183,8 +183,8 @@ export class ServicesController {
         `Error fetching service with id ${id}: ${error.message}`,
         error.stack,
       );
-      reply.code(404).send({
-        statusCode: 404,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -216,8 +216,8 @@ export class ServicesController {
         `Error updating service with id ${id}: ${error.message}`,
         error.stack,
       );
-      reply.code(404).send({
-        statusCode: 404,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -247,8 +247,8 @@ export class ServicesController {
         `Error deleting service with id ${id}: ${error.message}`,
         error.stack,
       );
-      reply.code(404).send({
-        statusCode: 404,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });

@@ -52,8 +52,8 @@ export class ProductController {
         `Error creating product: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -125,8 +125,8 @@ export class ProductController {
         `Error fetching all products: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -156,8 +156,8 @@ export class ProductController {
         `Error fetching products for service ${serviceId}: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -187,8 +187,8 @@ export class ProductController {
         `Error fetching products for hotel ${hotelId}: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -216,8 +216,8 @@ export class ProductController {
         `Error fetching product with id ${id}: ${error.message}`,
         error.stack,
       );
-      reply.code(404).send({
-        statusCode: 404,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -249,8 +249,8 @@ export class ProductController {
         `Error updating product with id ${id}: ${error.message}`,
         error.stack,
       );
-      reply.code(404).send({
-        statusCode: 404,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -277,8 +277,8 @@ export class ProductController {
         `Error deleting product with id ${id}: ${error.message}`,
         error.stack,
       );
-      reply.code(404).send({
-        statusCode: 404,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });

@@ -56,8 +56,8 @@ export class ServiceTemplateController {
         `Error creating service template: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -118,8 +118,8 @@ export class ServiceTemplateController {
         `Error fetching service templates: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });

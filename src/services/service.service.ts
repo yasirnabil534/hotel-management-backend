@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Service } from '@prisma/client';
 import { CreateServiceDto, UpdateServiceDto } from './service.dto';
 import { IServiceRepository, IServiceService } from './service.interface';
@@ -37,10 +43,7 @@ export class ServicesService implements IServiceService {
     try {
       return await this.serviceRepository.update(id, updateServiceDto);
     } catch (error) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Service with ID ${id} not found`);
-      }
-      throw error;
+      this.handlePrismaError(error, id);
     }
   }
 
@@ -48,10 +51,28 @@ export class ServicesService implements IServiceService {
     try {
       await this.serviceRepository.remove(id);
     } catch (error) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Service with ID ${id} not found`);
-      }
-      throw error;
+      this.handlePrismaError(error, id);
     }
   }
-}
+
+  /**
+   * Maps Prisma error codes to appropriate NestJS HTTP exceptions.
+   */
+  private handlePrismaError(error: any, id?: string): never {
+    if (error?.status) {
+      throw error;
+    }
+    switch (error?.code) {
+      case 'P2025':
+        throw new NotFoundException(
+          id ? `Service with ID ${id} not found` : 'Record not found',
+        );
+      case 'P2002':
+        throw new ConflictException('Duplicate record');
+      case 'P2023':
+        throw new BadRequestException('Malformed id');
+      default:
+        throw error;
+    }
+  }
+}
