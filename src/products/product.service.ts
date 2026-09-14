@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  PayloadTooLargeException,
 } from '@nestjs/common';
 import { Product } from './product.entity';
 import { CreateProductDto, UpdateProductDto } from './product.dto';
@@ -18,6 +19,7 @@ export class ProductService implements IProductService {
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
+      this.validateImagePayload(createProductDto.images);
       return this.productRepository.create(createProductDto);
     } catch (error) {
       this.handlePrismaError(error);
@@ -65,6 +67,7 @@ export class ProductService implements IProductService {
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
     try {
+      this.validateImagePayload(updateProductDto.images);
       return await this.productRepository.update(id, updateProductDto);
     } catch (error) {
       this.handlePrismaError(error, id);
@@ -76,6 +79,23 @@ export class ProductService implements IProductService {
       await this.productRepository.remove(id);
     } catch (error) {
       this.handlePrismaError(error, id);
+    }
+  }
+
+  /**
+   * Defense-in-depth: reject images arrays whose combined base64 length
+   * exceeds 15 MB (BODY_LIMIT_MB). Prisma/Fastify already blocks at the
+   * transport layer, but this catches edge cases (pre-parsed bodies, etc.).
+   * Full-replace semantics: the frontend always sends the complete final list.
+   */
+  private validateImagePayload(images?: string[]): void {
+    if (!images || images.length === 0) return;
+    const LIMIT_BYTES = 15 * 1024 * 1024; // 15 MB in chars ≈ bytes for base64
+    const totalLength = images.reduce((sum, img) => sum + img.length, 0);
+    if (totalLength > LIMIT_BYTES) {
+      throw new PayloadTooLargeException(
+        `Images payload too large (${Math.round(totalLength / 1024 / 1024)} MB). Maximum is 15 MB total.`,
+      );
     }
   }
 
