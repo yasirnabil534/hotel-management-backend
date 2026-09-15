@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  IsOptional,
+  IsArray,
+  ArrayMaxSize,
+} from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty()
@@ -17,6 +24,9 @@ export class CreateProductDto {
   price: number;
 
   @ApiProperty({ type: [String], default: [], required: false })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5, { message: 'A product can have at most 5 images' })
   @IsString({ each: true })
   images?: string[];
 
@@ -38,22 +48,30 @@ export class CreateProductDto {
 
 export class UpdateProductDto {
   @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   name?: string;
 
   @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   description?: string;
 
   @ApiProperty({ required: false })
+  @IsOptional()
   @IsNumber()
   price?: number;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ type: [String], required: false })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5, { message: 'A product can have at most 5 images' })
   @IsString({ each: true })
   images?: string[];
 
   @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  categoryId: string;
+  categoryId?: string;
 }
+

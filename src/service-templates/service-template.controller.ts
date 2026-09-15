@@ -21,6 +21,7 @@ import { IServiceTemplateService } from './service-template.interface';
 import { Logger } from '@nestjs/common';
 import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
 import { ServiceTemplate } from './service-template.entity';
+import { ObjectIdPipe } from 'src/utils/object-id.pipe';
 
 @ApiTags('Service Templates APIs')
 @Controller('/service-templates')
@@ -56,8 +57,8 @@ export class ServiceTemplateController {
         `Error creating service template: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -118,8 +119,8 @@ export class ServiceTemplateController {
         `Error fetching service templates: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -130,7 +131,7 @@ export class ServiceTemplateController {
   @ApiOperation({ summary: 'Get a service template by id' })
   @ApiResponse({ status: 200, description: 'Return the service template.' })
   async findOne(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Res() reply: FastifyReply,
   ): Promise<void> {
     try {
@@ -160,7 +161,7 @@ export class ServiceTemplateController {
     description: 'The service template has been successfully updated.',
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Body() updateServiceTemplateDto: UpdateServiceTemplateDto,
     @Res() reply: FastifyReply,
   ): Promise<void> {
@@ -194,7 +195,7 @@ export class ServiceTemplateController {
     description: 'The service template has been successfully deleted.',
   })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Res() reply: FastifyReply,
   ): Promise<void> {
     try {

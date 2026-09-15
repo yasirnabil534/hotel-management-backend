@@ -21,6 +21,7 @@ import { ISystemServiceService } from './dynamic-services.interface';
 import { Logger } from '@nestjs/common';
 import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
 import { SystemService } from './dynamic-services.entity';
+import { ObjectIdPipe } from 'src/utils/object-id.pipe';
 
 @ApiTags('Dynamic Services APIs')
 @Controller('/dynamic-services')
@@ -136,7 +137,7 @@ export class DynamicServicesController {
   @ApiOperation({ summary: 'Get a system service by id' })
   @ApiResponse({ status: 200, description: 'Return the system service.' })
   async findOne(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Res() reply: FastifyReply,
   ): Promise<void> {
     try {
@@ -196,7 +197,7 @@ export class DynamicServicesController {
     description: 'The system service has been successfully updated.',
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Body() updateSystemServiceDto: UpdateSystemServiceDto,
     @Res() reply: FastifyReply,
   ): Promise<void> {
@@ -230,7 +231,7 @@ export class DynamicServicesController {
     description: 'The system service has been successfully deleted.',
   })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Res() reply: FastifyReply,
   ): Promise<void> {
     try {
@@ -260,7 +261,7 @@ export class DynamicServicesController {
     description: 'The system service status has been successfully changed.',
   })
   async changeStatus(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Body() body: { status: boolean },
     @Res() reply: FastifyReply,
   ): Promise<void> {

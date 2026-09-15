@@ -18,6 +18,7 @@ import { ICategoryService } from './category.interface';
 import { CreateCategoryDto, UpdateCategoryDto } from './category.dto';
 import { Category } from './category.entity';
 import { QueryProcessorInterceptor } from 'src/common/query-processor.interceptor';
+import { ObjectIdPipe } from 'src/utils/object-id.pipe';
 
 @ApiTags('Categories')
 @Controller('/categories')
@@ -137,7 +138,7 @@ export class CategoryController {
   })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   async findOne(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Res() reply: FastifyReply,
   ): Promise<void> {
     try {
@@ -231,7 +232,7 @@ export class CategoryController {
   })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   async update(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
     @Res() reply: FastifyReply,
   ): Promise<void> {
@@ -263,7 +264,7 @@ export class CategoryController {
   })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ObjectIdPipe) id: string,
     @Res() reply: FastifyReply,
   ): Promise<void> {
     try {
