@@ -21,7 +21,7 @@ import { IServiceTemplateService } from './service-template.interface';
 import { Logger } from '@nestjs/common';
 import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 import { ServiceTemplate } from './service-template.entity';
-import { ObjectIdPipe } from 'src/utils/object-id.pipe';
+import { ObjectIdPipe } from '../utils/object-id.pipe';
 
 @ApiTags('Service Templates APIs')
 @Controller('/service-templates')

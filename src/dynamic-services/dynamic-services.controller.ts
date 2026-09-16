@@ -21,7 +21,7 @@ import { ISystemServiceService } from './dynamic-services.interface';
 import { Logger } from '@nestjs/common';
 import { QueryProcessorInterceptor } from '../common/query-processor.interceptor';
 import { SystemService } from './dynamic-services.entity';
-import { ObjectIdPipe } from 'src/utils/object-id.pipe';
+import { ObjectIdPipe } from '../utils/object-id.pipe';
 
 @ApiTags('Dynamic Services APIs')
 @Controller('/dynamic-services')

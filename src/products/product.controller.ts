@@ -12,7 +12,7 @@ import {
   Res,
   UseInterceptors,
 } from '@nestjs/common';
-import { ObjectIdPipe } from 'src/utils/object-id.pipe';
+import { ObjectIdPipe } from '../utils/object-id.pipe';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateProductDto, UpdateProductDto } from './product.dto';
