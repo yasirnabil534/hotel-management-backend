@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { Category } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './category.dto';
@@ -121,13 +121,20 @@ export class CategoryRepository implements ICategoryRepository {
   }
 
   async remove(id: string): Promise<void> {
-    try {
-      await this.prisma.category.delete({
-        where: { id },
-      });
-    } catch (error) {
-      console.error(`Error removing category with id ${id} in repository:`, error);
-      throw error;
+    const children = await this.prisma.category.count({ where: { parentId: id } });
+    if (children > 0) {
+      throw new ConflictException(
+        `Category has ${children} sub-categor${children > 1 ? 'ies' : 'y'}; delete them first.`,
+      );
     }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.product.deleteMany({ where: { categoryId: id } });
+      await tx.category.delete({ where: { id } });
+    });
+  }
+
+  async countChildren(parentId: string): Promise<number> {
+    return this.prisma.category.count({ where: { parentId } });
   }
 }

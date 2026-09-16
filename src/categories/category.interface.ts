@@ -9,6 +9,7 @@ export interface ICategoryRepository {
   findByService(serviceId: string): Promise<Category[]>;
   update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category>;
   remove(id: string): Promise<void>;
+  countChildren(parentId: string): Promise<number>;
 }
 
 export interface ICategoryService {

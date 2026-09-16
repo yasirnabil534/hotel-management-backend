@@ -86,12 +86,15 @@ model Category {
   serviceId String   @db.ObjectId
   hotelId   String   @db.ObjectId
   images    String[] @default([])  // Change to non-optional with default empty value
+  parentId  String?  @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  service SystemService   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  hotel   Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  product Product[]
+  service  SystemService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  hotel    Hotel         @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  product  Product[]
+  parent   Category?     @relation("CategoryTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children Category[]    @relation("CategoryTree")
 }
 
 model ServiceTemplate {
