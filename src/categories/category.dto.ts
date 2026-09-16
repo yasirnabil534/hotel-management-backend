@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateCategoryDto {
   @ApiProperty({ description: 'The name of the category' })
@@ -16,11 +16,28 @@ export class CreateCategoryDto {
   @IsString()
   @IsNotEmpty()
   hotelId: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Parent category id — omit for top-level',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class UpdateCategoryDto {
-  @ApiProperty({ description: 'The name of the category' })
+  @ApiProperty({ description: 'The name of the category', required: false })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  name: string;
+  name?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Parent category id — set to null to promote to top-level, omit to leave parent unchanged',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string | null;
 }

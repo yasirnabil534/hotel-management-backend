@@ -130,4 +130,8 @@ export class CategoryRepository implements ICategoryRepository {
       throw error;
     }
   }
+
+  async countChildren(parentId: string): Promise<number> {
+    return this.prisma.category.count({ where: { parentId } });
+  }
 }

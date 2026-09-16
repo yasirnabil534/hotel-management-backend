@@ -15,6 +15,14 @@ export class Category {
   @ApiProperty({ description: 'The ID of the hotel this category belongs to' })
   hotelId: string;
 
+  @ApiProperty({
+    description: 'Parent category id — null means top-level',
+    required: false,
+    nullable: true,
+    type: String,
+  })
+  parentId: string | null;
+
   @ApiProperty({ description: 'The date when the category was created' })
   createdAt: Date;
 

@@ -53,8 +53,8 @@ export class CategoryController {
         `Error creating category: ${error.message}`,
         error.stack,
       );
-      reply.code(500).send({
-        statusCode: 500,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -248,8 +248,8 @@ export class CategoryController {
         `Error updating category with id ${id}: ${error.message}`,
         error.stack,
       );
-      reply.code(404).send({
-        statusCode: 404,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
@@ -279,8 +279,8 @@ export class CategoryController {
         `Error deleting category with id ${id}: ${error.message}`,
         error.stack,
       );
-      reply.code(404).send({
-        statusCode: 404,
+      reply.code(error?.status || 500).send({
+        statusCode: error?.status || 500,
         statusMessage: 'Failed',
         error: error.message,
       });
